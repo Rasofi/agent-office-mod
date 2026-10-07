@@ -26,4 +26,4 @@ A Claude Code mod that shows what a session and its agents are doing and lets or
 ```
 
 ## Current Task
-Spike (step 1): prove the mod loads in a fresh cloud session (setup script) and in a local session. Plan and risks: `docs/specs/multi-repo-mod.md` in Rasofi/agent-office (PR #72).
+Session view, piece 1 (0.2.0): `/office` counts turns, tool calls (per tool, per agent loop, failures) and tokens per model, plus context use and cost. Next: piece 2, a pane in terminal/desktop drawing the same view; piece 3, stats across sessions on one machine. Plan: `docs/specs/multi-repo-mod.md` in Rasofi/agent-office.
