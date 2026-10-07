@@ -15,6 +15,7 @@ jobs:
       # Actions must be pinned to a full commit SHA (org policy). Node comes with the runner image.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # Pinned to the build the mod was tested on; bump on purpose.
+      - run: node scripts/check-agents.mjs
       - run: npm install -g @anthropic-ai/claude-code@2.1.292
       - run: claude plugin validate --strict .
       - run: claude plugin test .

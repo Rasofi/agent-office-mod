@@ -6,6 +6,7 @@ Claude Code plugin `agent-pack` (plugin manifest `.claude-plugin/plugin.json`, m
 
 | What | Command |
 | --- | --- |
+| Check agents | `node scripts/check-agents.mjs` (`--fix` copies `scripts/shared/*.md` into the agent files) |
 | Validate | `claude plugin validate --strict .` |
 | Test | `claude plugin test .` |
 | Try it | `claude --plugin-dir .` |
@@ -15,6 +16,10 @@ Claude Code plugin `agent-pack` (plugin manifest `.claude-plugin/plugin.json`, m
 
 - The repo is public: no private hostnames, IPs, tokens or machine-specific details.
 - Bump `version` in `plugin.json` on every release, or installed copies never update.
+- The agent files (`agents/*.md`) are the product. Each role's kind, write rights and model rules live in the roster in `scripts/check-agents.mjs`: change the file and the roster together.
+- Shared rules and the report format live in `scripts/shared/`: edit them there and run `node scripts/check-agents.mjs --fix`, never inside an agent file.
+- Agent files stay generic: no machine paths, hostnames, private tools, vendor connectors or this repo's own name (the check has the list).
+- Workers never get `Agent`; review roles never get Edit, Write or NotebookEdit; no `haiku` for coding roles or leads.
 - Never rename the plugin (`agent-pack`); installs are keyed by name.
 - Tests answer engine calls with `on('<call>', () => ({ value }))`; `$.command.run` takes a full `CommandRunInput` (origin, presentation).
 - `$.state` values need a self-contained contract in `types/index.d.ts` (no imports); `hooks/` imports its types from `../types`.
