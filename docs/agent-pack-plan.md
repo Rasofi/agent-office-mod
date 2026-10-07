@@ -23,10 +23,10 @@ Still open: confirm that line in a real cloud session (10 minutes, phase 2).
 
 ## How people install it (target)
 
-1. **Terminal / desktop app:** `/plugin install agent-pack --marketplace Rasofi/agent-office-mod`. The next session starts with the orchestrator as the main session. Nesting works with the default limit.
+1. **Terminal / desktop app:** `/plugin install agent-pack --marketplace Rasofi/agent-pack`. The next session starts with the orchestrator as the main session. Nesting works with the default limit.
 2. **Cloud sessions (claude.ai/code, phone):** three lines in the environment's setup script (bash):
    ```bash
-   claude plugin marketplace add Rasofi/agent-office-mod
+   claude plugin marketplace add Rasofi/agent-pack
    claude plugin install agent-pack@rasofi-mods
    python3 -c "import json,os;p=os.path.expanduser('~/.claude/settings.json');os.makedirs(os.path.dirname(p),exist_ok=True);d=json.load(open(p)) if os.path.exists(p) else {};d.setdefault('env',{})['CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH']='3';json.dump(d,open(p,'w'),indent=2)"
    ```

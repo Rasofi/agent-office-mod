@@ -2,7 +2,7 @@
 
 A Claude Code plugin that gives every session a small delegation team. Your main session becomes the **orchestrator**: it plans the change, writes acceptance criteria and hands the work to two **leads** on Opus, who run **workers** on Sonnet (code, tests, review) and Haiku (docs, housekeeping). A slower **deep reviewer** on Fable is called only for risky changes. Install it once: no server, no tokens, nothing to deploy.
 
-**Status: 0.8.0.** The team (13 agent files), plus `/pack` (what the session and its agents are doing) and `/handoff` / `/inbox` (handoffs between repos). Cloud sessions need one extra setup line, see [Install](#install).
+**Status: 0.8.1.** The team (13 agent files), plus `/pack` (what the session and its agents are doing) and `/handoff` / `/inbox` (handoffs between repos). Cloud sessions need one extra setup line, see [Install](#install).
 
 ## The team
 
@@ -71,7 +71,7 @@ Next: open a draft PR from feature/health
 1. In a Claude Code session (v2.1.287 or later):
 
    ```text
-   /plugin install agent-pack --marketplace Rasofi/agent-office-mod
+   /plugin install agent-pack --marketplace Rasofi/agent-pack
    ```
 
    Answer `y` to add the marketplace, then pick a scope.
@@ -88,7 +88,7 @@ claude plugin update agent-pack@rasofi-mods
 Cloud sessions don't install user or repo plugins yet. Until the plugin is listed in Anthropic's directory, add these lines to the cloud environment's setup script:
 
 ```bash
-claude plugin marketplace add Rasofi/agent-office-mod
+claude plugin marketplace add Rasofi/agent-pack
 claude plugin install agent-pack@rasofi-mods
 python3 -c "import json,os;p=os.path.expanduser('~/.claude/settings.json');os.makedirs(os.path.dirname(p),exist_ok=True);d=json.load(open(p)) if os.path.exists(p) else {};d.setdefault('env',{})['CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH']='3';json.dump(d,open(p,'w'),indent=2)"
 # agent-pack refresh: 2026-10-07
