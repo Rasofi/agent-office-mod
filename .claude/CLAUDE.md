@@ -9,10 +9,14 @@ Claude Code mod `agent-office` (plugin manifest `.claude-plugin/plugin.json`, ma
 | Validate | `claude plugin validate --strict .` |
 | Test | `claude plugin test .` |
 | Try it | `claude --plugin-dir .` |
+| Type-check | `tsc -p <tsconfig>` with the tsconfig from the header of the engine's `claude-code.d.ts` (load the `plugin-authoring` skill for its path); include that file, `hooks`, `types`, `test` |
 
 ## Rules
 
 - The repo may go public: no private hostnames, IPs, tokens or homelab details.
 - Bump `version` in `plugin.json` on every release, or installed copies never update.
 - Never rename the plugin (`agent-office`); installs are keyed by name.
-- Tests answer engine calls with `on('<call>', () => ({ value }))`.
+- Tests answer engine calls with `on('<call>', () => ({ value }))`; `$.command.run` takes a full `CommandRunInput` (origin, presentation).
+- `$.state` values need a self-contained contract in `types/index.d.ts` (no imports); `hooks/` imports its types from `../types`.
+- Keep logic pure in `hooks/stats.ts` (unit-tested); `hooks/register.ts` only wires events to it.
+- Metadata only: tool names and numbers, never tool inputs, outputs or message text.
