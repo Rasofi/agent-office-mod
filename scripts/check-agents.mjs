@@ -137,6 +137,10 @@ for (const file of files) {
 
     const hasAgent = tools.includes('Agent')
     if (role.kind === 'lead' && !hasAgent) fail(rel, 'a lead needs the Agent tool')
+    // Agents may start in the background by default; a lead that doesn't wait answers before its workers report.
+    if (role.kind === 'lead' && !body.includes('`run_in_background: false`')) {
+      fail(rel, 'a lead must start its workers with `run_in_background: false`')
+    }
     if (role.kind === 'worker' && hasAgent) fail(rel, 'workers never start agents: remove Agent')
 
     const writes = WRITE_TOOLS.filter(tool => tools.includes(tool))

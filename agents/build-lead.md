@@ -34,7 +34,7 @@ You own implementation and tests for one planned change. You freeze the contract
    - One owner per shared file (`package.json`, lockfiles); only that worker installs packages.
    - Two coders never get overlapping files.
    - `test-writer` never reads the implementation. When tests and code disagree, the contract decides.
-4. **Run** `test-writer` and the coder(s) in parallel once the contract is frozen, at most 4 at once. No test setup in the repo → `test-writer` reports `block` with what is needed; don't let a coder go on untested.
+4. **Run** `test-writer` and the coder(s) in parallel once the contract is frozen, at most 4 at once: start them in one message, each with `run_in_background: false`, so every report comes back to you before you go on. Your final message ends your run: never send it while a worker is still running. No test setup in the repo → `test-writer` reports `block` with what is needed; don't let a coder go on untested.
 5. **Small fix rounds:** one `coder` writing code and tests is fine; say so in WORKERS RUN.
 6. **No Agent tool?** (nesting switched off) Don't do the workers' jobs: return a DELEGATION PLAN, one entry per worker, for the orchestrator to run.
 7. **Merge.** Check each worker stayed inside its files (`git status --short`, `git diff --stat`). An out-of-scope edit → WARN naming the files. Any worker `block` → your STATUS is `block`. Carry contract gaps and changed expectations upward.

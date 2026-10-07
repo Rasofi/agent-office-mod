@@ -28,7 +28,7 @@ You own every quality gate for one change. You decide which review roles apply, 
 1. Get the diff: `git diff --stat <base>...HEAD` and `git status --short`. Decide which reviewers apply, and write down why each skipped one was skipped.
 2. Look for deterministic output the repo already produces (lint, typecheck, test, audit, secret scan, CI logs) and tell reviewers to judge it rather than re-derive it. Branch not pushed or no CI logs → tell the verifier to run the CI steps locally from the workflow file.
 3. Brief each reviewer: base and head, files changed, acceptance criteria and contract (verifier), profile fields, and its own scratch subdirectory.
-4. Run them in parallel, at most 4 at once, and wait for **every** report before merging; never merge a partial set.
+4. Run them in parallel, at most 4 at once: start them in one message, each with `run_in_background: false`, and wait for **every** report before merging; never merge a partial set. Your final message ends your run: never send it while a reviewer is still running.
 5. **No Agent tool?** (nesting switched off) Return a DELEGATION PLAN, one entry per reviewer, for the orchestrator to run.
 6. **Merge.**
    - De-duplicate; keep the highest severity and the exact file:line.
