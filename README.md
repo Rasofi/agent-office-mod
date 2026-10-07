@@ -73,6 +73,8 @@ claude plugin install agent-office@rasofi-mods
 
 ⚠ Cloud environments cache what the setup script installed and reuse it for about 7 days, so a new release doesn't reach new cloud sessions on its own. To pick it up now, change the date on the `refresh` line and start a new session (a changed script rebuilds the cache).
 
+The `refresh` line is a shell comment and runs nothing: only the change to the script's text matters, so any new value works, and you can leave it alone when you don't need a release right away.
+
 ## What it can reach
 
 A mod runs with your permissions. List what this one hooks and calls before installing:
