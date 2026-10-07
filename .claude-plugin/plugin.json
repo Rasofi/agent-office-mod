@@ -1,7 +1,7 @@
 {
   "name": "agent-pack",
-  "version": "0.7.0",
-  "description": "Agent pack for Claude Code: what this session and its agents are doing (/pack), and handoffs between repos as GitHub issues (/handoff, /inbox).",
+  "version": "0.8.0",
+  "description": "A delegation team for Claude Code: the main session becomes an orchestrator that runs Opus leads and Sonnet/Haiku workers, with an on-call Fable deep reviewer. Plus /pack (what the session and its agents are doing) and /handoff, /inbox (handoffs between repos).",
   "author": {
     "name": "Rasofi"
   },

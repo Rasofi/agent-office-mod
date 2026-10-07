@@ -66,12 +66,12 @@ for (const surface of ['terminal', 'desktop'] as const) {
     on('tool.call', () => ({ result: 'ok' as never }))
     on('classic.SubagentStart', () => ({}))
 
-    await $.tool.call({ tool: 'Grep', pattern: 'secret-pattern' })
+    await $.tool.call({ tool: 'Bash', command: 'grep -r secret-pattern .' })
     await $.classic.SubagentStart({ agent_id: 'a06e5ae9xyz', agent_type: 'Explore' })
     const pane = await mount($, surface)
 
     expect((await pane.find({ type: 'Text', text: /^Turns:/ }))?.text).toBe('Turns: 0 · tool calls: 1')
-    expect((await pane.find({ type: 'Text', text: 'Top tools: Grep 1' }))?.text).toBe('Top tools: Grep 1')
+    expect((await pane.find({ type: 'Text', text: 'Top tools: Bash 1' }))?.text).toBe('Top tools: Bash 1')
     expect((await pane.find({ type: 'Text', text: 'Agents:' }))?.props.bold).toBe(true)
     expect(await pane.find({ type: 'Text', text: /Explore: 0 turns, 0 tool calls/ })).toBeDefined()
     expect(JSON.stringify(await pane.drawn())).not.toContain('secret-pattern')

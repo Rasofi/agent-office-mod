@@ -1,6 +1,6 @@
 # Delegation team plugin: plan
 
-Status: plan, 2026-10-07. Feasibility tested (below); nothing built yet.
+Status: phase 1 built (0.8.0, 2026-10-07): the 13 agent files, `settings.json`, the profile template and `scripts/check-agents.mjs` in CI. Phases 2-6 open.
 
 ## Answer: yes, a plain plugin does it
 
@@ -61,7 +61,7 @@ Layer 1 is the product. Layer 2 makes it nicer and safer, and nothing in layer 1
 
 | Role | Level | Default model | Tools | Job |
 | --- | --- | --- | --- | --- |
-| `orchestrator` | main session | `inherit` (your `/model` choice) | Agent, Read, Grep, Glob, Bash, AskUserQuestion | clarifies (max 3 questions), plans, writes acceptance criteria, routes, merges reports, gives the verdict |
+| `orchestrator` | main session | `inherit` (your `/model` choice) | everything except Edit, Write, NotebookEdit (so it keeps the session's GitHub and other tools) | clarifies (max 3 questions), plans, writes acceptance criteria, routes, merges reports, gives the verdict |
 | `build-lead` | lead | `opus` | Agent, Read, Grep, Glob, Bash, Write (scratch only) | freezes the contract, splits briefs, runs builders, checks scope, merges |
 | `review-lead` | lead | `opus` | Agent, Read, Grep, Glob, Bash | picks the review roles, runs them in parallel, merges one verdict |
 | `coder` | worker | `sonnet` | Read, Grep, Glob, Bash, Edit, Write | one scoped change from a brief |
@@ -101,7 +101,7 @@ Layer 1 sets a model in each agent file (table above). Layer 2 adds plugin optio
 
 | Task | Flow |
 | --- | --- |
-| Small (one file, no data/auth) | `coder` → `security-reviewer` → `verifier` |
+| Small (one source file and its tests, nothing public changes, no data/auth) | `coder` (+ `test-writer`) → `security-reviewer` + `verifier` |
 | Docs only | `docs-writer` → `verifier` |
 | Feature / multi-file fix | plan + criteria → `build-lead` → `review-lead` → `docs-writer` + `scout` |
 | Data model, auth, payments, forms, API | as above; `compliance-reviewer` always runs |
