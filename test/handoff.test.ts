@@ -79,7 +79,7 @@ test("formatInbox shows only the user's own issues, cleaned", () => {
     { number: 9, title: 'a pull request', html_url: 'u9', user: { login: 'me' }, pull_request: {} },
   ])
 
-  expect(text).toContain('#7 from Rasofi/app: Handoff from Rasofi/app: add [2J route')
+  expect(text).toContain('#7 from Rasofi/app: add [2J route')
   expect(text).not.toContain('\u001b')
   expect(text).not.toContain('stranger')
   expect(text).not.toContain('#9')

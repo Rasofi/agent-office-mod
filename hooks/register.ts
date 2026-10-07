@@ -3,9 +3,14 @@ import type { EngineInterface, ProcessRunResult, Register } from 'claude-code'
 
 import {
   LABEL,
+  MAX_TEXT,
+  ORCHESTRATOR_RULES,
+  TOOL_DESCRIPTION,
   formatInbox,
   ghFailure,
+  handoffCommand,
   handoffIssue,
+  parseCreated,
   parseHandoffArgs,
   repoFromRemote,
 } from './handoff'
@@ -55,6 +60,18 @@ export const register: Register = on => {
     await $.command.register({
       name: 'inbox',
       description: "Open agent-handoff issues for this session's repo",
+    })
+    await $.tool.register({
+      name: 'handoff',
+      description: TOOL_DESCRIPTION,
+      inputSchema: {
+        type: 'object',
+        properties: {
+          repo: { type: 'string', description: 'Target repository as owner/repo' },
+          request: { type: 'string', description: 'What the other repository should do, and why' },
+        },
+        required: ['repo', 'request'],
+      },
     })
 
     return next(e)
@@ -148,5 +165,47 @@ export const register: Register = on => {
     }
 
     return { text: formatInbox(repo, me, issues) }
+  })
+
+  // The model's handoff: the GitHub call runs as a Bash tool call, so the
+  // person's permission rules and dialog apply and show the exact command.
+  on('tool.call', { tool: 'mcp__agent-office__handoff' }, async ($, e) => {
+    const repo = typeof e.repo === 'string' ? e.repo : ''
+    const request = typeof e.request === 'string' ? e.request : ''
+    const parsed = parseHandoffArgs(`${repo} ${request}`)
+    if ('error' in parsed) {
+      return { result: `Not sent: ${parsed.error} (request up to ${MAX_TEXT} characters)`, isError: true as const }
+    }
+
+    const here = repoFromRemote((await $.session.repo())?.remote)
+    if (here !== null && here.toLowerCase() === parsed.target.toLowerCase()) {
+      return { result: 'Not sent: that is this repository; do the work here instead.', isError: true as const }
+    }
+
+    const ran = await $.tool.call({
+      tool: 'Bash',
+      command: handoffCommand(parsed.target, handoffIssue(here, parsed.text)),
+      description: `Open an agent-handoff issue in ${parsed.target}`,
+    })
+    if (ran.deny !== undefined) return { result: `Not sent: ${ran.deny}`, isError: true as const }
+
+    const output = ran.text ?? ''
+    const made = parseCreated(output)
+    if (ran.isError === true || made === null) {
+      return { result: `Not sent: ${ghFailure(parsed.target, output)}`, isError: true as const }
+    }
+
+    return { result: `Handoff #${made.number} opened in ${parsed.target}: ${made.url}` }
+  }).catch(() => ({ result: 'Not sent: the handoff tool failed.', isError: true as const }))
+
+  on('prompt.compose', async ($, e, next) => {
+    const composed = await next(e)
+
+    return {
+      sections: [
+        ...composed.sections,
+        { id: 'agent-office:handoffs', text: ORCHESTRATOR_RULES, scope: 'session' as const },
+      ],
+    }
   })
 }
