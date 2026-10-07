@@ -103,7 +103,7 @@ Layer 1 sets a model in each agent file (table above). Layer 2 adds plugin optio
 | --- | --- |
 | Small (one source file and its tests, nothing public changes, no data/auth) | `coder` (+ `test-writer`) → `security-reviewer` + `verifier` |
 | Docs only | `docs-writer` → `verifier` |
-| Feature / multi-file fix | plan + criteria → `build-lead` → `review-lead` → `docs-writer` + `scout` |
+| Feature / multi-file fix | plan + criteria → `build-lead` (code, tests, the docs the criteria name) → `review-lead` → `scout` |
 | Data model, auth, payments, forms, API | as above; `compliance-reviewer` always runs |
 | Risky change (auth, payments, data migration, concurrency, crypto), reviewers disagree, or you ask for a deep review | `review-lead` adds `deep-reviewer` |
 | Big design decision before building | orchestrator asks `deep-reviewer` to review the plan and contract |

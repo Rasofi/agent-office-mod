@@ -16,7 +16,7 @@ You are the orchestrator: the tech lead for one task at a time in this repositor
 | `agent-pack:review-lead` | opus | the review after every build: runs the review roles in parallel, merges one verdict |
 | `agent-pack:coder` | sonnet | one scoped code change; small tasks go straight here |
 | `agent-pack:test-writer` | sonnet | tests per acceptance criterion |
-| `agent-pack:docs-writer` | haiku | docs and CHANGELOG after a behaviour change |
+| `agent-pack:docs-writer` | haiku | docs and CHANGELOG; in a feature, `build-lead` runs it for the docs the criteria name |
 | `agent-pack:researcher` | sonnet | one research question, answered with sources |
 | `agent-pack:verifier` | sonnet | runs the real checks; never the builder |
 | `agent-pack:security-reviewer` | sonnet | security review of the diff |
@@ -48,7 +48,7 @@ You are the orchestrator: the tech lead for one task at a time in this repositor
    | --- | --- |
    | `small` | `coder`, plus `test-writer` in parallel when tests are needed → `security-reviewer` and `verifier` in parallel → `docs-writer` if docs are affected |
    | `docs` | `docs-writer` → `verifier` (links, build) |
-   | `feature` | plan → `build-lead` → `review-lead` → `docs-writer` + `scout` |
+   | `feature` | plan → `build-lead` (code, tests and the docs the criteria name) → `review-lead` → `scout`; `docs-writer` again only for docs the criteria didn't cover (CHANGELOG, state notes) |
    | `feature` touching personal data (accounts, forms, analytics, tracking, a new third party) or AI | as above; tell `review-lead` that `compliance-reviewer` must run |
    | Risky change (auth, payments, migrations, concurrency, crypto), reviewers disagree, or the person asks for a deep review | `review-lead` adds `deep-reviewer` |
    | Big design decision before building | `deep-reviewer` reviews the plan and contract first |

@@ -8,10 +8,10 @@ A Claude Code plugin that gives every session a small delegation team. Your main
 
 ```text
 orchestrator (main session, your /model)
-├── build-lead (opus)    → test-writer, coder (sonnet)
+├── build-lead (opus)    → test-writer, coder (sonnet) · docs-writer (haiku)
 ├── review-lead (opus)   → verifier, security-reviewer, compliance-reviewer (sonnet)
 │                          deep-reviewer (fable, on call)
-├── docs-writer, scout, housekeeper (haiku)
+├── scout, housekeeper (haiku)
 └── researcher (sonnet)
 ```
 
@@ -35,7 +35,7 @@ How a task flows:
 
 - **A question:** the orchestrator answers it itself. The team is for changes.
 - **A small change** (one source file and its tests, nothing public changes, no data or auth): `coder` (+ `test-writer`) → `security-reviewer` + `verifier`.
-- **A feature, a multi-file fix, or any new route, command or flag:** plan and acceptance criteria → `build-lead` → `review-lead` → `docs-writer` + `scout`.
+- **A feature, a multi-file fix, or any new route, command or flag:** plan and acceptance criteria → `build-lead` (code, tests and the docs the criteria name) → `review-lead` → `scout`.
 - **Deploys, releases, merges:** yours. You get the exact command and a first-run checklist.
 
 Rules every role follows:
@@ -135,6 +135,8 @@ followups: ask            # ask | file | off
 ### Cost
 
 The team's descriptions add about 1.4k tokens to every session, and the orchestrator's instructions about 3.5k to the main session. Each agent run adds its own instructions (about 2k tokens) plus its work. Opus leads and parallel workers add up, so small changes skip the leads, and `deep-reviewer` runs only when it's called for. `claude plugin details agent-pack` shows the current numbers.
+
+Measured once: a new endpoint with tests and a README section (both leads, coder, test-writer, docs-writer, verifier, security reviewer, housekeeper twice) took about 4 minutes and $0.82, with the main session on Sonnet.
 
 ## See what the session is doing: `/pack`
 
