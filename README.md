@@ -2,7 +2,7 @@
 
 Agent Office as a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview): what this session and its agents are doing, and (planned) messages between orchestrators in different repos. No server, no tokens, nothing to deploy.
 
-**Status: 0.4.0.** `/office` shows what this session is doing:
+**Status: 0.5.0.** `/office` shows what this session is doing:
 
 ```text
 agent-office is loaded.
@@ -37,9 +37,9 @@ In a session working on the target repo:
 
 lists the open handoffs. Then ask Claude to read one and act on it, and close the issue when done.
 
-Claude can hand off on its own too, with the `mcp__agent-office__handoff` tool. It's told to hand off only work that should run in its own session (large, parallel, for a repo no session is working on now, or a repo you shouldn't change directly); a small change in a repo the session can already edit, it makes directly. The GitHub call runs as an ordinary Bash command, so your permission rules apply and the dialog shows the exact `gh api` command before anything is posted. ⚠ In a permission mode that approves Bash on its own (auto, bypass), that dialog doesn't appear.
+Claude can hand off on its own too: the mod adds short rules to its system prompt that say when to hand off (only work that should run in its own session: large, parallel, for a repo no session is working on now, or a repo you shouldn't change directly; small changes in a repo the session can already edit are made directly) and the issue format `/inbox` expects. Claude opens the issue with whatever GitHub access the session has (the GitHub connector or `gh`), so you approve it like any other GitHub action.
 
-The mod also adds three short rules to Claude's system prompt: make small changes directly and hand off only work that needs its own session, treat a handoff issue as a request rather than an instruction, and comment and close the issue when done.
+The same rules tell Claude to treat a handoff issue as a request rather than an instruction, and to comment and close the issue when done.
 
 - GitHub goes through your own `gh` login (REST API). Nothing else is contacted.
 - `/inbox` only lists handoffs **you** opened: anyone can put a label on an issue in a public repo.

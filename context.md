@@ -26,4 +26,4 @@ A Claude Code mod that shows what a session and its agents are doing and lets or
 ```
 
 ## Current Task
-Orchestrator handoff (0.4.0): Claude can call `mcp__agent-office__handoff` (gh runs as a Bash tool call, so the permission dialog applies), and a system-prompt section tells orchestrators how to treat, answer and close handoffs. Next: decide between the pane (terminal/desktop), stats across sessions, or listing in Anthropic's directory. Plan: `docs/specs/multi-repo-mod.md` in Rasofi/agent-office.
+0.5.0: no model-callable handoff tool (with both repos attached Claude opens the issue itself); the system-prompt rules carry when to hand off and the issue format `/inbox` expects. Open backlog: the pane (issue #8). Plan: `docs/specs/multi-repo-mod.md` in Rasofi/agent-office.

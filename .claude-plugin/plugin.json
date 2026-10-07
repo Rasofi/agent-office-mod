@@ -1,6 +1,6 @@
 {
   "name": "agent-office",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Agent Office inside Claude Code: what this session and its agents are doing (/office), and handoffs between repos as GitHub issues (/handoff, /inbox).",
   "author": {
     "name": "Rasofi"
