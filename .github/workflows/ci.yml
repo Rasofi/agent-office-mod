@@ -1,0 +1,22 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Pinned to the build the mod was tested on; bump on purpose.
+      - run: npm install -g @anthropic-ai/claude-code@2.1.292
+      - run: claude plugin validate --strict .
+      - run: claude plugin test .

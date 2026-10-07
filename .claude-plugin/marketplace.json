@@ -1,0 +1,13 @@
+{
+  "name": "rasofi-mods",
+  "description": "Rasofi's Claude Code mods",
+  "owner": {
+    "name": "Rasofi"
+  },
+  "plugins": [
+    {
+      "name": "agent-office",
+      "source": "./"
+    }
+  ]
+}
