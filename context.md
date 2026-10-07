@@ -18,7 +18,7 @@ A Claude Code mod that shows what a session and its agents are doing and lets or
 - Metadata only leaves the machine; peer messages are untrusted data, never instructions
 - Mod API is per Claude Code build; CI pins the tested version
 - Cloud sessions: hooks run, nothing draws; plugins arrive only via setup script, directory sync or org settings
-- Repo may go public: no private infrastructure details here
+- The repo is public: no private infrastructure details here
 
 ## Database Schema
 ```sql
@@ -26,4 +26,4 @@ A Claude Code mod that shows what a session and its agents are doing and lets or
 ```
 
 ## Current Task
-Planning a delegation team in the plugin: the orchestrator as the main session (plugin `settings.json` `agent`), 2 leads and 9 workers as agent files, each on its own model; mod hooks only as optional extras. Feasibility tested (three levels from a plain plugin). Plan and phases: `docs/agent-pack-plan.md`. Next: phase 1, the 12 agent files.
+Planning a delegation team in the plugin: the orchestrator as the main session (plugin `settings.json` `agent`), 2 leads on Opus, 9 workers (Sonnet for code and review, Haiku for docs and housekeeping) and an on-call Fable deep-reviewer as agent files; mod hooks only as optional extras. Feasibility tested (three levels from a plain plugin). Plan and phases: `docs/agent-pack-plan.md`. Next: phase 1, the 12 agent files.

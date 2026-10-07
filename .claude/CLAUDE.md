@@ -13,7 +13,7 @@ Claude Code plugin `agent-pack` (plugin manifest `.claude-plugin/plugin.json`, m
 
 ## Rules
 
-- The repo may go public: no private hostnames, IPs, tokens or machine-specific details.
+- The repo is public: no private hostnames, IPs, tokens or machine-specific details.
 - Bump `version` in `plugin.json` on every release, or installed copies never update.
 - Never rename the plugin (`agent-pack`); installs are keyed by name.
 - Tests answer engine calls with `on('<call>', () => ({ value }))`; `$.command.run` takes a full `CommandRunInput` (origin, presentation).
