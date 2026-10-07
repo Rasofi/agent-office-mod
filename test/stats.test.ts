@@ -1,6 +1,13 @@
 import { expect, test } from 'claude-code/testing'
 
-import { compact, emptyStats, formatOffice, recordToolCall, recordTurn } from '../hooks/stats'
+import {
+  compact,
+  emptyStats,
+  formatOffice,
+  recordAgentStart,
+  recordToolCall,
+  recordTurn,
+} from '../hooks/stats'
 
 const usage = (model: string, input: number, output: number) => ({
   model,
@@ -81,4 +88,25 @@ test('an agent the engine no longer lists still shows by short id', () => {
   expect(text).toContain('  agent abcdef12: 0 turns, 1 tool call')
   expect(text).not.toContain('Context:')
   expect(text).not.toContain('Tokens by model:')
+})
+
+test('a finished subagent keeps the type it started with', () => {
+  let stats = recordAgentStart(emptyStats(), { agentId: 'a06e5ae9xyz', agentType: 'Explore' })
+  stats = recordToolCall(stats, { tool: 'Read', agentId: 'a06e5ae9xyz', hasFailed: false })
+  const text = formatOffice({ stats, engine: 'x', surfaces: [], repo: null, agents: [] })
+
+  expect(text).toContain('  Explore: 0 turns, 1 tool call')
+  expect(text).not.toContain('agent a06e5ae9')
+})
+
+test('state from 0.2.0 without agentTypes still formats', () => {
+  const { agentTypes: _, ...old } = recordToolCall(emptyStats(), {
+    tool: 'Read',
+    agentId: 'abcdef123456',
+    hasFailed: false,
+  })
+  const text = formatOffice({ stats: old as never, engine: 'x', surfaces: [], repo: null, agents: [] })
+
+  expect(text).toContain('  agent abcdef12: 0 turns, 1 tool call')
+  expect(recordAgentStart(old as never, { agentId: 'b', agentType: 'Plan' }).agentTypes).toEqual({ b: 'Plan' })
 })

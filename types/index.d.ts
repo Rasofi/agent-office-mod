@@ -16,6 +16,8 @@ export type SessionStats = {
   tools: Record<string, number>
   loops: Record<string, LoopStats>
   tokens: Record<string, Tokens>
+  /** Subagent type by agent id, recorded when the subagent starts. */
+  agentTypes: Record<string, string>
 }
 
 export type TurnUsage = {

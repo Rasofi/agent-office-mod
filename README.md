@@ -42,7 +42,10 @@ Cloud sessions (claude.ai/code) don't install user or repo plugins yet. Until th
 ```bash
 claude plugin marketplace add Rasofi/agent-office-mod
 claude plugin install agent-office@rasofi-mods
+# agent-office refresh: 2026-10-07
 ```
+
+⚠ Cloud environments cache what the setup script installed and reuse it for about 7 days, so a new release doesn't reach new cloud sessions on its own. To pick it up now, change the date on the `refresh` line and start a new session (a changed script rebuilds the cache).
 
 ## What it can reach
 
