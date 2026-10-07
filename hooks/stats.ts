@@ -96,27 +96,33 @@ export const compact = (n: number): string =>
 
 const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`
 
-const loopLine = (label: string, loop: LoopStats): string =>
-  `  ${label}: ${plural(loop.turns, 'turn')}, ${plural(loop.toolCalls, 'tool call')}` +
+const loopText = (label: string, loop: LoopStats): string =>
+  `${label}: ${plural(loop.turns, 'turn')}, ${plural(loop.toolCalls, 'tool call')}` +
   (loop.failed > 0 ? ` (${loop.failed} failed)` : '')
 
-export const formatOffice = (view: OfficeView): string => {
+/** One row of the office view: a plain line, a section heading, or an item under one. */
+export type OfficeRow = { kind: 'line' | 'heading' | 'item'; text: string }
+
+/** The office view as rows: what the /office pane draws and its text reply joins. */
+export const officeRows = (view: OfficeView): OfficeRow[] => {
   const { stats } = view
-  const lines = [
-    'agent-office is loaded.',
-    `Claude Code: ${view.engine}`,
-    `Surfaces: ${view.surfaces.join(', ') || 'none'}`,
-    `Repository: ${view.repo ?? 'none'}`,
-  ]
+  const rows: OfficeRow[] = []
+  const line = (text: string) => rows.push({ kind: 'line', text })
+  const heading = (text: string) => rows.push({ kind: 'heading', text })
+  const item = (text: string) => rows.push({ kind: 'item', text })
+
+  line(`Claude Code: ${view.engine}`)
+  line(`Surfaces: ${view.surfaces.join(', ') || 'none'}`)
+  line(`Repository: ${view.repo ?? 'none'}`)
 
   if (view.context !== undefined) {
     const used =
       view.context.percent !== undefined ? `${Math.round(view.context.percent)}% of ` : ''
     const cost = view.costUsd !== undefined ? ` · cost $${view.costUsd.toFixed(2)}` : ''
-    lines.push(`Context: ${used}${compact(view.context.window)} tokens${cost}`)
+    line(`Context: ${used}${compact(view.context.window)} tokens${cost}`)
   }
 
-  lines.push(
+  line(
     `Turns: ${stats.turns} · tool calls: ${stats.toolCalls}` +
       (stats.failed > 0 ? ` (${stats.failed} failed)` : ''),
   )
@@ -125,7 +131,7 @@ export const formatOffice = (view: OfficeView): string => {
     .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
     .slice(0, 5)
   if (top.length > 0) {
-    lines.push(`Top tools: ${top.map(([tool, n]) => `${tool} ${n}`).join(', ')}`)
+    line(`Top tools: ${top.map(([tool, n]) => `${tool} ${n}`).join(', ')}`)
   }
 
   const known = new Map(view.agents.map(agent => [agent.id, agent]))
@@ -137,8 +143,8 @@ export const formatOffice = (view: OfficeView): string => {
       ...known.keys(),
     ]),
   ]
-  lines.push('Agents:')
-  lines.push(loopLine(MAIN, loopOf(stats, undefined)))
+  heading('Agents:')
+  item(loopText(MAIN, loopOf(stats, undefined)))
   for (const id of agentIds) {
     const agent = known.get(id)
     const type = agent?.name ?? agent?.type ?? stats.agentTypes?.[id]
@@ -148,19 +154,25 @@ export const formatOffice = (view: OfficeView): string => {
         : agent === undefined
           ? type
           : `${type} (${agent.status})`
-    lines.push(loopLine(label, loopOf(stats, id)))
+    item(loopText(label, loopOf(stats, id)))
   }
 
   const models = Object.entries(stats.tokens)
   if (models.length > 0) {
-    lines.push('Tokens by model:')
+    heading('Tokens by model:')
     for (const [model, t] of models) {
-      lines.push(
-        `  ${model}: in ${compact(t.input)}, out ${compact(t.output)}, ` +
+      item(
+        `${model}: in ${compact(t.input)}, out ${compact(t.output)}, ` +
           `cache read ${compact(t.cacheRead)}, cache write ${compact(t.cacheWrite)}`,
       )
     }
   }
 
-  return lines.join('\n')
+  return rows
 }
+
+export const formatOffice = (view: OfficeView): string =>
+  [
+    'agent-office is loaded.',
+    ...officeRows(view).map(row => (row.kind === 'item' ? `  ${row.text}` : row.text)),
+  ].join('\n')

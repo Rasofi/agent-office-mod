@@ -2,7 +2,7 @@
 
 Agent Office as a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview): what this session and its agents are doing, and (planned) messages between orchestrators in different repos. No server, no tokens, nothing to deploy.
 
-**Status: 0.5.0.** `/office` shows what this session is doing:
+**Status: 0.6.0.** `/office` shows what this session is doing:
 
 ```text
 agent-office is loaded.
@@ -18,6 +18,8 @@ Agents:
 Tokens by model:
   claude-...: in 12.3k, out 4.1k, cache read 210.0k, cache write 9.8k
 ```
+
+In the terminal (and the desktop Code tab) `/office` opens this view as a pane that updates live as the session works; `ctrl+x x` closes it. Where nothing can draw a pane (a cloud session, `claude -p`) it answers with the text above.
 
 Counts start when the mod loads in the session. It keeps tool names and numbers only, never tool inputs, outputs or messages, and sends nothing anywhere.
 
