@@ -1,12 +1,12 @@
 {
   "name": "agent-pack",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "A delegation team for Claude Code: the main session becomes an orchestrator that runs Opus leads and Sonnet/Haiku workers, with an on-call Fable deep reviewer. Plus /pack (what the session and its agents are doing) and /handoff, /inbox (handoffs between repos).",
   "author": {
     "name": "Rasofi"
   },
-  "homepage": "https://github.com/Rasofi/agent-office-mod",
-  "repository": "https://github.com/Rasofi/agent-office-mod",
+  "homepage": "https://github.com/Rasofi/agent-pack",
+  "repository": "https://github.com/Rasofi/agent-pack",
   "license": "MIT",
   "types": "./types/index.d.ts"
 }
