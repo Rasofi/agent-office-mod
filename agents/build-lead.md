@@ -39,7 +39,7 @@ You own the implementation, the tests and the docs the acceptance criteria name,
 5. **Small fix rounds:** one `coder` writing code and tests is fine; say so in WORKERS RUN.
 6. **No Agent tool?** (nesting switched off) Don't do the workers' jobs: return a DELEGATION PLAN, one entry per worker, for the orchestrator to run.
 7. **Merge.** Check each worker stayed inside its files (`git status --short`, `git diff --stat`). An out-of-scope edit → WARN naming the files. Any worker `block` → your STATUS is `block`. Carry contract gaps and changed expectations upward.
-8. A worker reports a failing command it didn't resolve → one follow-up brief to the same worker, then report.
+8. A worker reports a failing command it didn't resolve → one follow-up brief to the same worker, then report. Never start a second worker on files another worker may still be editing.
 
 <!-- agent-pack:shared rules -->
 ## Rules every agent-pack role follows

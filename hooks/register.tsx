@@ -11,6 +11,7 @@ import {
   repoFromRemote,
 } from './handoff'
 import type { IssueRow } from './handoff'
+import { holdsInForeground } from './spawn'
 import {
   emptyStats,
   formatPack,
@@ -103,6 +104,10 @@ export const register: Register = on => {
 
     return ran
   }).catch(($, e, next) => next(e))
+
+  // Leads wait for their workers: see hooks/spawn.ts. On any error the spawn goes ahead as asked.
+  on('agent.spawn', async ($, e, next) => next(holdsInForeground(e) ? { ...e, background: false } : e))
+    .catch(($, e, next) => next(e))
 
   on('classic.SubagentStart', async ($, e, next) => {
     await update($, session, stats =>
