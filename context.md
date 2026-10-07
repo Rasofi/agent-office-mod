@@ -26,4 +26,4 @@ A Claude Code mod that shows what a session and its agents are doing and lets or
 ```
 
 ## Current Task
-0.6.0: `/office` opens a live pane (terminal and desktop Code tab), drawn from the pure `officeRows()` in `hooks/stats.ts`; the text reply stays where no pane can draw (no surface, or the pane is not placed). Handoffs as in 0.5.0: no model-callable tool; the system-prompt rules carry when to hand off and the issue format `/inbox` expects.
+Planning the agent pack: a generic delegation system (2 leads, 9 workers, orchestrator mode, model tiers) rewritten from the private rasofi-core pack. Plan and phases: `docs/agent-pack-plan.md`. Next: PR 0 spike (registered roles, nested spawn, model rewrite at spawn, options from repo settings in the cloud).
