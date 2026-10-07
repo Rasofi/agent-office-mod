@@ -48,3 +48,13 @@ test('/office counts the tool calls the session made', async ($, on) => {
   expect(text).toContain('Top tools: Read 2')
   expect(text).not.toContain('/repo/a.md')
 })
+
+test('/office names a subagent by the type it started with', async ($, on) => {
+  engine(on)
+  on('classic.SubagentStart', () => ({}))
+
+  await $.classic.SubagentStart({ agent_id: 'a06e5ae9xyz', agent_type: 'Explore' })
+  const { text } = await $.command.run(office)
+
+  expect(text).toContain('  Explore: 0 turns, 0 tool calls')
+})

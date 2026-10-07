@@ -20,6 +20,16 @@ export const emptyStats = (): SessionStats => ({
   tools: {},
   loops: {},
   tokens: {},
+  agentTypes: {},
+})
+
+export const recordAgentStart = (
+  stats: SessionStats,
+  agent: { agentId: string; agentType: string },
+): SessionStats => ({
+  ...stats,
+  // `?? {}`: state kept from 0.2.0 within a session has no agentTypes yet.
+  agentTypes: { ...(stats.agentTypes ?? {}), [agent.agentId]: agent.agentType },
 })
 
 const loopOf = (stats: SessionStats, agentId: string | undefined): LoopStats =>
@@ -120,14 +130,24 @@ export const formatOffice = (view: OfficeView): string => {
 
   const known = new Map(view.agents.map(agent => [agent.id, agent]))
   const loopIds = Object.keys(stats.loops)
-  const agentIds = [...new Set([...loopIds.filter(id => id !== MAIN), ...known.keys()])]
+  const agentIds = [
+    ...new Set([
+      ...loopIds.filter(id => id !== MAIN),
+      ...Object.keys(stats.agentTypes ?? {}),
+      ...known.keys(),
+    ]),
+  ]
   lines.push('Agents:')
   lines.push(loopLine(MAIN, loopOf(stats, undefined)))
   for (const id of agentIds) {
     const agent = known.get(id)
-    const label = agent
-      ? `${agent.name ?? agent.type} (${agent.status})`
-      : `agent ${id.slice(0, 8)}`
+    const type = agent?.name ?? agent?.type ?? stats.agentTypes?.[id]
+    const label =
+      type === undefined
+        ? `agent ${id.slice(0, 8)}`
+        : agent === undefined
+          ? type
+          : `${type} (${agent.status})`
     lines.push(loopLine(label, loopOf(stats, id)))
   }
 

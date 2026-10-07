@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
 import type { Register } from 'claude-code'
 
-import { emptyStats, formatOffice, recordToolCall, recordTurn } from './stats'
+import { emptyStats, formatOffice, recordAgentStart, recordToolCall, recordTurn } from './stats'
 
 const session = atom({ plugin: 'agent-office', key: 'session' } as const, emptyStats())
 
@@ -24,6 +24,14 @@ export const register: Register = on => {
 
     return ran
   }).catch(($, e, next) => next(e))
+
+  on('classic.SubagentStart', async ($, e, next) => {
+    await update($, session, stats =>
+      recordAgentStart(stats, { agentId: e.agent_id, agentType: e.agent_type }),
+    )
+
+    return next(e)
+  })
 
   on('turn.complete', async ($, e, next) => {
     const done = await next(e)
