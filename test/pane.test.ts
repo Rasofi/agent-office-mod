@@ -43,7 +43,7 @@ test('/pack opens the pane where one can be placed', async ($, on) => {
 
   expect(opened).toBe('pack')
   expect(text).toContain('Agent pack pane opened')
-  expect(text).not.toContain('Turns:')
+  expect(text).not.toContain('Runs:')
 })
 
 test('/pack answers as text where no surface draws', async ($, on) => {
@@ -57,7 +57,7 @@ test('/pack answers as text where no surface draws', async ($, on) => {
   const { text } = await $.command.run(pack)
 
   expect(isOpened).toBe(false)
-  expect(text).toContain('Turns: 0 · tool calls: 0')
+  expect(text).toContain('Runs: 0 · tool calls: 0')
 })
 
 for (const surface of ['terminal', 'desktop'] as const) {
@@ -70,10 +70,10 @@ for (const surface of ['terminal', 'desktop'] as const) {
     await $.classic.SubagentStart({ agent_id: 'a06e5ae9xyz', agent_type: 'Explore' })
     const pane = await mount($, surface)
 
-    expect((await pane.find({ type: 'Text', text: /^Turns:/ }))?.text).toBe('Turns: 0 · tool calls: 1')
+    expect((await pane.find({ type: 'Text', text: /^Runs:/ }))?.text).toBe('Runs: 0 · tool calls: 1')
     expect((await pane.find({ type: 'Text', text: 'Top tools: Bash 1' }))?.text).toBe('Top tools: Bash 1')
     expect((await pane.find({ type: 'Text', text: 'Agents:' }))?.props.bold).toBe(true)
-    expect(await pane.find({ type: 'Text', text: /Explore: 0 turns, 0 tool calls/ })).toBeDefined()
+    expect(await pane.find({ type: 'Text', text: /Explore: 0 runs, 0 tool calls/ })).toBeDefined()
     expect(JSON.stringify(await pane.drawn())).not.toContain('secret-pattern')
   })
 }
@@ -83,9 +83,9 @@ test('the pack pane redraws as the session records tool calls', async ($, on) =>
   on('tool.call', () => ({ result: 'ok' as never }))
 
   const pane = await mount($, 'terminal')
-  expect((await pane.find({ type: 'Text', text: /^Turns:/ }))?.text).toBe('Turns: 0 · tool calls: 0')
+  expect((await pane.find({ type: 'Text', text: /^Runs:/ }))?.text).toBe('Runs: 0 · tool calls: 0')
 
   await $.tool.call({ tool: 'Read', file_path: '/repo/a.md' })
 
-  expect((await pane.find({ type: 'Text', text: /^Turns:/ }))?.text).toBe('Turns: 0 · tool calls: 1')
+  expect((await pane.find({ type: 'Text', text: /^Runs:/ }))?.text).toBe('Runs: 0 · tool calls: 1')
 })

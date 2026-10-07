@@ -1,6 +1,6 @@
 {
   "name": "agent-pack",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "A delegation team for Claude Code: the main session becomes an orchestrator that runs Opus leads and Sonnet/Haiku workers, with an on-call Fable deep reviewer. Plus /pack (what the session and its agents are doing) and /handoff, /inbox (handoffs between repos).",
   "author": {
     "name": "Rasofi"

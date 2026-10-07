@@ -35,7 +35,7 @@ test('/pack reports the engine, surfaces, repository and context', async ($, on)
   expect(text).toContain('Surfaces: terminal')
   expect(text).toContain('Repository: https://github.com/example-org/web-app')
   expect(text).toContain('Context: 25% of 200.0k tokens · cost $0.50')
-  expect(text).toContain('Turns: 0 · tool calls: 0')
+  expect(text).toContain('Runs: 0 · tool calls: 0')
 })
 
 test('/pack counts the tool calls the session made', async ($, on) => {
@@ -58,5 +58,5 @@ test('/pack names a subagent by the type it started with', async ($, on) => {
   await $.classic.SubagentStart({ agent_id: 'a06e5ae9xyz', agent_type: 'Explore' })
   const { text } = await $.command.run(pack)
 
-  expect(text).toContain('  Explore: 0 turns, 0 tool calls')
+  expect(text).toContain('  Explore: 0 runs, 0 tool calls')
 })

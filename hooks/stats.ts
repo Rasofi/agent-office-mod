@@ -32,6 +32,11 @@ export const recordAgentStart = (
   agentTypes: { ...(stats.agentTypes ?? {}), [agent.agentId]: agent.agentType },
 })
 
+export const recordAgentStop = (stats: SessionStats, agentId: string): SessionStats => ({
+  ...stats,
+  finished: { ...(stats.finished ?? {}), [agentId]: true },
+})
+
 const loopOf = (stats: SessionStats, agentId: string | undefined): LoopStats =>
   stats.loops[agentId ?? MAIN] ?? { turns: 0, toolCalls: 0, failed: 0 }
 
@@ -97,7 +102,7 @@ export const compact = (n: number): string =>
 const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`
 
 const loopText = (label: string, loop: LoopStats): string =>
-  `${label}: ${plural(loop.turns, 'turn')}, ${plural(loop.toolCalls, 'tool call')}` +
+  `${label}: ${plural(loop.turns, 'run')}, ${plural(loop.toolCalls, 'tool call')}` +
   (loop.failed > 0 ? ` (${loop.failed} failed)` : '')
 
 /** One row of the pack view: a plain line, a section heading, or an item under one. */
@@ -123,7 +128,7 @@ export const packRows = (view: PackView): PackRow[] => {
   }
 
   line(
-    `Turns: ${stats.turns} · tool calls: ${stats.toolCalls}` +
+    `Runs: ${stats.turns} · tool calls: ${stats.toolCalls}` +
       (stats.failed > 0 ? ` (${stats.failed} failed)` : ''),
   )
 
@@ -151,9 +156,11 @@ export const packRows = (view: PackView): PackRow[] => {
     const label =
       type === undefined
         ? `agent ${id.slice(0, 8)}`
-        : agent === undefined
-          ? type
-          : `${type} (${agent.status})`
+        : agent !== undefined
+          ? `${type} (${agent.status})`
+          : stats.finished?.[id] === true
+            ? `${type} (finished)`
+            : type
     item(loopText(label, loopOf(stats, id)))
   }
 

@@ -2,7 +2,7 @@
 
 A Claude Code plugin that gives every session a small delegation team. Your main session becomes the **orchestrator**: it plans the change, writes acceptance criteria and hands the work to two **leads** on Opus, who run **workers** on Sonnet (code, tests, review) and Haiku (docs, housekeeping). A slower **deep reviewer** on Fable is called only for risky changes. Install it once: no server, no tokens, nothing to deploy.
 
-**Status: 0.9.0.** The team (13 agent files), plus `/pack` (what the session and its agents are doing) and `/handoff` / `/inbox` (handoffs between repos). Cloud sessions need one extra setup line, see [Install](#install).
+**Status: 0.10.0.** The team (13 agent files), plus `/pack` (what the session and its agents are doing) and `/handoff` / `/inbox` (handoffs between repos). Cloud sessions need one extra setup line, see [Install](#install).
 
 ## The team
 
@@ -36,7 +36,7 @@ How a task flows:
 - **A question:** the orchestrator answers it itself. The team is for changes.
 - **A small change** (one source file and its tests, nothing public changes, no data or auth): `coder` (+ `test-writer`) → `security-reviewer` + `verifier`.
 - **A feature, a multi-file fix, or any new route, command or flag:** plan and acceptance criteria → `build-lead` (code, tests and the docs the criteria name) → `review-lead` → `scout`.
-- **Deploys, releases, merges:** yours. You get the exact command and a first-run checklist.
+- **Deploys, releases, merges:** yours. You get the exact command and a first-run checklist; the orchestrator asks "Merge PR #n now?" as its own question and never takes a "go" for the work as permission to merge.
 
 Rules every role follows:
 
@@ -147,18 +147,18 @@ Claude Code: 2.1.292
 Surfaces: terminal
 Repository: https://github.com/you/your-repo
 Context: 25% of 200.0k tokens · cost $0.42
-Turns: 6 · tool calls: 31 (1 failed)
+Runs: 6 · tool calls: 31 (1 failed)
 Top tools: Bash 12, Read 9, Edit 5, Grep 3, Agent 2
 Agents:
-  main: 4 turns, 20 tool calls (1 failed)
-  Explore (completed): 2 turns, 11 tool calls
+  main: 4 runs, 20 tool calls (1 failed)
+  Explore (finished): 2 runs, 11 tool calls
 Tokens by model:
   claude-...: in 12.3k, out 4.1k, cache read 210.0k, cache write 9.8k
 ```
 
 In the terminal (and the desktop Code tab) `/pack` opens this view as a pane that updates live as the session works; `ctrl+x x` closes it. Where nothing can draw a pane (a cloud session, `claude -p`) it answers with the text above.
 
-Counts start when the plugin loads in the session. It keeps tool names and numbers only, never tool inputs, outputs or messages, and sends nothing anywhere. `/pack` and the handoff commands are [mod](https://code.claude.com/docs/en/plugins/mods/overview) features; the team works without them.
+A run is one stretch of an agent's work until it stops or answers; a nudged agent shows 2. Counts start when the plugin loads in the session. It keeps tool names and numbers only, never tool inputs, outputs or messages, and sends nothing anywhere. `/pack` and the handoff commands are [mod](https://code.claude.com/docs/en/plugins/mods/overview) features; the team works without them.
 
 ## Hand work to another repo
 

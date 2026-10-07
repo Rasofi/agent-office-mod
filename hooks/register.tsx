@@ -17,6 +17,7 @@ import {
   formatPack,
   packRows,
   recordAgentStart,
+  recordAgentStop,
   recordToolCall,
   recordTurn,
 } from './stats'
@@ -116,6 +117,12 @@ export const register: Register = on => {
 
     return next(e)
   })
+
+  on('classic.SubagentStop', async ($, e, next) => {
+    await update($, session, stats => recordAgentStop(stats, e.agent_id))
+
+    return next(e)
+  }).catch(($, e, next) => next(e))
 
   on('turn.complete', async ($, e, next) => {
     const done = await next(e)

@@ -5,6 +5,7 @@ import {
   emptyStats,
   formatPack,
   recordAgentStart,
+  recordAgentStop,
   recordToolCall,
   recordTurn,
 } from '../hooks/stats'
@@ -74,10 +75,10 @@ test('formatPack lists loops, top tools and tokens', () => {
   })
 
   expect(text).toContain('Context: 25% of 200.0k tokens · cost $0.42')
-  expect(text).toContain('Turns: 1 · tool calls: 8 (1 failed)')
+  expect(text).toContain('Runs: 1 · tool calls: 8 (1 failed)')
   expect(text).toContain('Top tools: Bash 2, Read 2, Edit 1, Glob 1, Grep 1')
-  expect(text).toContain('  main: 1 turn, 7 tool calls')
-  expect(text).toContain('  Explore (running): 0 turns, 1 tool call (1 failed)')
+  expect(text).toContain('  main: 1 run, 7 tool calls')
+  expect(text).toContain('  Explore (running): 0 runs, 1 tool call (1 failed)')
   expect(text).toContain('  m1: in 12.3k, out 678, cache read 1.0k, cache write 10')
 })
 
@@ -85,7 +86,7 @@ test('an agent the engine no longer lists still shows by short id', () => {
   const stats = recordToolCall(emptyStats(), { tool: 'Read', agentId: 'abcdef123456', hasFailed: false })
   const text = formatPack({ stats, engine: 'x', surfaces: [], repo: null, agents: [] })
 
-  expect(text).toContain('  agent abcdef12: 0 turns, 1 tool call')
+  expect(text).toContain('  agent abcdef12: 0 runs, 1 tool call')
   expect(text).not.toContain('Context:')
   expect(text).not.toContain('Tokens by model:')
 })
@@ -95,7 +96,7 @@ test('a finished subagent keeps the type it started with', () => {
   stats = recordToolCall(stats, { tool: 'Read', agentId: 'a06e5ae9xyz', hasFailed: false })
   const text = formatPack({ stats, engine: 'x', surfaces: [], repo: null, agents: [] })
 
-  expect(text).toContain('  Explore: 0 turns, 1 tool call')
+  expect(text).toContain('  Explore: 0 runs, 1 tool call')
   expect(text).not.toContain('agent a06e5ae9')
 })
 
@@ -107,6 +108,14 @@ test('state from 0.2.0 without agentTypes still formats', () => {
   })
   const text = formatPack({ stats: old as never, engine: 'x', surfaces: [], repo: null, agents: [] })
 
-  expect(text).toContain('  agent abcdef12: 0 turns, 1 tool call')
+  expect(text).toContain('  agent abcdef12: 0 runs, 1 tool call')
   expect(recordAgentStart(old as never, { agentId: 'b', agentType: 'Plan' }).agentTypes).toEqual({ b: 'Plan' })
+})
+
+test('a stopped subagent the engine no longer lists shows as finished', () => {
+  let stats = recordAgentStart(emptyStats(), { agentId: 'a1', agentType: 'agent-pack:scout' })
+  stats = recordAgentStop(stats, 'a1')
+  const text = formatPack({ stats, engine: '2.1.292', surfaces: [], repo: null, agents: [] })
+
+  expect(text).toContain('  agent-pack:scout (finished): 0 runs, 0 tool calls')
 })

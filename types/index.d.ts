@@ -18,6 +18,8 @@ export type SessionStats = {
   tokens: Record<string, Tokens>
   /** Subagent type by agent id, recorded when the subagent starts. */
   agentTypes: Record<string, string>
+  /** Subagents that stopped (SubagentStop); absent in state from 0.9 and older. */
+  finished?: Record<string, true>
 }
 
 export type TurnUsage = {
