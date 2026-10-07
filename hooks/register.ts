@@ -178,9 +178,6 @@ export const register: Register = on => {
     }
 
     const here = repoFromRemote((await $.session.repo())?.remote)
-    if (here !== null && here.toLowerCase() === parsed.target.toLowerCase()) {
-      return { result: 'Not sent: that is this repository; do the work here instead.', isError: true as const }
-    }
 
     const ran = await $.tool.call({
       tool: 'Bash',

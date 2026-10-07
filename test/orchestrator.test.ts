@@ -61,19 +61,18 @@ test('the handoff tool runs gh through Bash, so the permission dialog applies', 
   expect(String(ran.result)).toBe('Handoff #9 opened in Rasofi/api: https://github.com/Rasofi/api/issues/9')
 })
 
-test('the handoff tool refuses the current repository', async ($, on) => {
+test('the handoff tool can hand work to a parallel session on the same repository', async ($, on) => {
   inSession(on, 'https://github.com/Rasofi/api')
-  let ranBash = false
-  on('tool.call', { tool: 'Bash' }, () => {
-    ranBash = true
-    return { result: {} as never }
+  let command = ''
+  on('tool.call', { tool: 'Bash' }, ($, e) => {
+    command = e.command
+    return { result: {} as never, text: '{"number":8,"url":"https://github.com/Rasofi/api/issues/8"}' }
   })
 
-  const ran = await $.tool.call({ tool: 'mcp__agent-office__handoff', repo: 'rasofi/API', request: 'x' })
+  const ran = await $.tool.call({ tool: 'mcp__agent-office__handoff', repo: 'Rasofi/api', request: 'build the pane' })
 
-  expect(ranBash).toBe(false)
-  expect(ran.isError).toBe(true)
-  expect(String(ran.result)).toContain('this repository')
+  expect(command).toContain("title='Handoff from Rasofi/api: build the pane'")
+  expect(String(ran.result)).toBe('Handoff #8 opened in Rasofi/api: https://github.com/Rasofi/api/issues/8')
 })
 
 test('a denied GitHub call reports that nothing was sent', async ($, on) => {
