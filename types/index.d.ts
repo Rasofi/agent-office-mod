@@ -30,7 +30,7 @@ export type TurnUsage = {
 
 export type AgentRow = { id: string; type: string; name?: string; status: string }
 
-export type OfficeView = {
+export type PackView = {
   stats: SessionStats
   engine: string
   surfaces: readonly string[]
@@ -42,6 +42,6 @@ export type OfficeView = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'agent-office': { session: SessionStats }
+    'agent-pack': { session: SessionStats }
   }
 }

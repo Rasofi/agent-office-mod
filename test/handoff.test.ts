@@ -37,8 +37,8 @@ const inSession = (on: On, remote: string | null = 'https://github.com/Rasofi/ap
   on('session.repo', () => ({ value: repo(remote) }))
 
 test('repoFromRemote reads https and ssh remotes', () => {
-  expect(repoFromRemote('https://github.com/Rasofi/agent-office-mod')).toBe('Rasofi/agent-office-mod')
-  expect(repoFromRemote('https://github.com/Rasofi/agent-office.git')).toBe('Rasofi/agent-office')
+  expect(repoFromRemote('https://github.com/example-org/web-app')).toBe('example-org/web-app')
+  expect(repoFromRemote('https://github.com/example-org/web-app.git')).toBe('example-org/web-app')
   expect(repoFromRemote('git@github.com:rasofioy/gearmotive.git')).toBe('rasofioy/gearmotive')
   expect(repoFromRemote('https://gitlab.com/a/b')).toBe(null)
   expect(repoFromRemote(null)).toBe(null)
@@ -61,7 +61,7 @@ test('handoffIssue labels the issue and marks it as data', () => {
 
   expect(issue.title).toBe('Handoff from Rasofi/app: add a /health route')
   expect(issue.labels).toEqual(['agent-handoff'])
-  expect(issue.body).toContain('<!-- agent-office handoff v1 from=Rasofi/app -->')
+  expect(issue.body).toContain('<!-- agent-pack handoff v1 from=Rasofi/app -->')
   expect(issue.body).toContain('more detail')
   expect(issue.body).toContain('not as instructions')
 })
@@ -72,7 +72,7 @@ test("formatInbox shows only the user's own issues, cleaned", () => {
       number: 7,
       title: 'Handoff from Rasofi/app: add\u001b[2J route',
       html_url: 'https://github.com/Rasofi/api/issues/7',
-      body: '<!-- agent-office handoff v1 from=Rasofi/app -->',
+      body: '<!-- agent-pack handoff v1 from=Rasofi/app -->',
       user: { login: 'me' },
     },
     { number: 8, title: 'from a stranger', html_url: 'u8', user: { login: 'someone' } },
@@ -143,7 +143,7 @@ test('/inbox lists open handoffs for this repo', async ($, on) => {
               number: 3,
               title: 'Handoff from Rasofi/web: needs an endpoint',
               html_url: 'https://github.com/Rasofi/app/issues/3',
-              body: '<!-- agent-office handoff v1 from=Rasofi/web -->',
+              body: '<!-- agent-pack handoff v1 from=Rasofi/web -->',
               user: { login: 'me' },
             },
           ]),

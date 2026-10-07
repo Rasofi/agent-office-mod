@@ -2,15 +2,15 @@ import { expect, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 import type { CommandRunInput, On, RenderPropsOf, RenderSurface } from 'claude-code'
 
-const office: CommandRunInput = {
-  command: 'office',
+const pack: CommandRunInput = {
+  command: 'pack',
   args: '',
   origin: { kind: 'composer' },
   presentation: { isFullscreen: false, columns: 120 },
 }
 
 const PANE: RenderPropsOf['Pane'] = {
-  title: 'Office',
+  title: 'Agent pack',
   isFocused: false,
   bodyColumns: 80,
   placement: 'inline',
@@ -29,9 +29,9 @@ const engine = (on: On, surfaces: RenderSurface[] = ['terminal']) => {
 }
 
 const mount = ($: Engine, surface: 'terminal' | 'desktop') =>
-  $.ui.mount({ plugin: 'agent-office', surface, component: 'Pane', requestId: 'office', props: PANE })
+  $.ui.mount({ plugin: 'agent-pack', surface, component: 'Pane', requestId: 'pack', props: PANE })
 
-test('/office opens the pane where one can be placed', async ($, on) => {
+test('/pack opens the pane where one can be placed', async ($, on) => {
   engine(on)
   let opened: string | undefined
   on('ui.open', (_, e) => {
@@ -39,14 +39,14 @@ test('/office opens the pane where one can be placed', async ($, on) => {
     return { value: { isPlaced: true } }
   })
 
-  const { text } = await $.command.run(office)
+  const { text } = await $.command.run(pack)
 
-  expect(opened).toBe('office')
-  expect(text).toContain('Office pane opened')
+  expect(opened).toBe('pack')
+  expect(text).toContain('Agent pack pane opened')
   expect(text).not.toContain('Turns:')
 })
 
-test('/office answers as text where no surface draws', async ($, on) => {
+test('/pack answers as text where no surface draws', async ($, on) => {
   engine(on, [])
   let isOpened = false
   on('ui.open', () => {
@@ -54,14 +54,14 @@ test('/office answers as text where no surface draws', async ($, on) => {
     return { value: { isPlaced: true } }
   })
 
-  const { text } = await $.command.run(office)
+  const { text } = await $.command.run(pack)
 
   expect(isOpened).toBe(false)
   expect(text).toContain('Turns: 0 · tool calls: 0')
 })
 
 for (const surface of ['terminal', 'desktop'] as const) {
-  test(`the office pane draws the session view on ${surface}`, async ($, on) => {
+  test(`the pack pane draws the session view on ${surface}`, async ($, on) => {
     engine(on)
     on('tool.call', () => ({ result: 'ok' as never }))
     on('classic.SubagentStart', () => ({}))
@@ -78,7 +78,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
   })
 }
 
-test('the office pane redraws as the session records tool calls', async ($, on) => {
+test('the pack pane redraws as the session records tool calls', async ($, on) => {
   engine(on)
   on('tool.call', () => ({ result: 'ok' as never }))
 
