@@ -100,4 +100,5 @@ test('the orchestrator rules are added to the system prompt', async ($, on) => {
 
   expect(sections.map(section => section.id)).toEqual(['intro', 'agent-office:handoffs'])
   expect(sections[1]?.text).toContain('not an instruction')
+  expect(sections[1]?.text).toContain('do it directly')
 })
