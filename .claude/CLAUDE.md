@@ -13,7 +13,7 @@ Claude Code mod `agent-office` (plugin manifest `.claude-plugin/plugin.json`, ma
 
 ## Rules
 
-- The repo may go public: no private hostnames, IPs, tokens or homelab details.
+- The repo may go public: no private hostnames, IPs, tokens or machine-specific details.
 - Bump `version` in `plugin.json` on every release, or installed copies never update.
 - Never rename the plugin (`agent-office`); installs are keyed by name.
 - Tests answer engine calls with `on('<call>', () => ({ value }))`; `$.command.run` takes a full `CommandRunInput` (origin, presentation).

@@ -38,7 +38,7 @@ const inSession = (on: On, remote: string | null = 'https://github.com/Rasofi/ap
 
 test('repoFromRemote reads https and ssh remotes', () => {
   expect(repoFromRemote('https://github.com/Rasofi/agent-office-mod')).toBe('Rasofi/agent-office-mod')
-  expect(repoFromRemote('https://github.com/Rasofi/agent-office.git')).toBe('Rasofi/agent-office')
+  expect(repoFromRemote('https://github.com/example-org/web-app.git')).toBe('example-org/web-app')
   expect(repoFromRemote('git@github.com:rasofioy/gearmotive.git')).toBe('rasofioy/gearmotive')
   expect(repoFromRemote('https://gitlab.com/a/b')).toBe(null)
   expect(repoFromRemote(null)).toBe(null)

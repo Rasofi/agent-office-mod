@@ -26,4 +26,4 @@ A Claude Code mod that shows what a session and its agents are doing and lets or
 ```
 
 ## Current Task
-Planning the agent pack: a generic delegation system (2 leads, 9 workers, orchestrator mode, model tiers) rewritten from the private rasofi-core pack. Plan and phases: `docs/agent-pack-plan.md`. Next: PR 0 spike (registered roles, nested spawn, model rewrite at spawn, options from repo settings in the cloud).
+Planning a delegation team in the plugin: the orchestrator as the main session (plugin `settings.json` `agent`), 2 leads and 9 workers as agent files, each on its own model; mod hooks only as optional extras. Feasibility tested (three levels from a plain plugin). Plan and phases: `docs/agent-pack-plan.md`. Next: phase 1, the 12 agent files.
