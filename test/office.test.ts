@@ -8,7 +8,9 @@ const office: CommandRunInput = {
   presentation: { isFullscreen: false, columns: 120 },
 }
 
+// Nothing places the pane here (a cloud session, a -p run): /office answers as text.
 const engine = (on: On, repo: SessionRepo | null = null) => {
+  on('ui.open', () => ({ value: { isPlaced: false, reason: 'no surface places panes' } }))
   on('session.version', () => ({ value: { version: '2.1.292' } }))
   on('session.surfaces', () => ({ value: ['terminal'] }))
   on('session.repo', () => ({ value: repo }))

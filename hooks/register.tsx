@@ -11,7 +11,15 @@ import {
   repoFromRemote,
 } from './handoff'
 import type { IssueRow } from './handoff'
-import { emptyStats, formatOffice, recordAgentStart, recordToolCall, recordTurn } from './stats'
+import {
+  emptyStats,
+  formatOffice,
+  officeRows,
+  recordAgentStart,
+  recordToolCall,
+  recordTurn,
+} from './stats'
+import type { OfficeView } from './stats'
 
 // GitHub through the user's own `gh` login (REST only: cloud sessions block GraphQL).
 const gh = async (
@@ -32,7 +40,7 @@ const gh = async (
   }
 }
 
-const parse = <T>(text: string): T | null => {
+const parse = <T,>(text: string): T | null => {
   try {
     return JSON.parse(text) as T
   } catch {
@@ -41,6 +49,31 @@ const parse = <T>(text: string): T | null => {
 }
 
 const session = atom({ plugin: 'agent-office', key: 'session' } as const, emptyStats())
+
+const PANE = 'office'
+
+// What /office shows, the pane and the text reply alike. Reading the atom makes
+// the pane a reader: every recorded tool call, agent or turn redraws it.
+const officeView = async ($: EngineInterface): Promise<OfficeView> => {
+  const [stats, engine, surfaces, repo, agents, usage] = await Promise.all([
+    read($, session),
+    $.session.version(),
+    $.session.surfaces(),
+    $.session.repo(),
+    $.agent.list(),
+    $.session.usage(),
+  ])
+
+  return {
+    stats,
+    engine: engine.version,
+    surfaces,
+    repo: repo?.remote ?? null,
+    agents,
+    context: usage.context,
+    costUsd: usage.cost?.usd,
+  }
+}
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
@@ -88,27 +121,38 @@ export const register: Register = on => {
     return done
   })
 
+  // A pane where one can draw; the text reply where nothing places it (cloud, -p).
+  // A -p run has no surface yet places every pane, so no surface means text too.
   on('command.run', { command: 'office' }, async $ => {
-    const [stats, engine, surfaces, repo, agents, usage] = await Promise.all([
-      read($, session),
-      $.session.version(),
-      $.session.surfaces(),
-      $.session.repo(),
-      $.agent.list(),
-      $.session.usage(),
-    ])
+    const surfaces = await $.session.surfaces()
+    const opened =
+      surfaces.length === 0
+        ? { isPlaced: false }
+        : await $.ui
+            .open({ id: PANE, title: 'Office' })
+            .catch(() => ({ isPlaced: false }))
+    if (opened.isPlaced) return { text: 'Office pane opened (ctrl+x x closes it).' }
 
-    return {
-      text: formatOffice({
-        stats,
-        engine: engine.version,
-        surfaces,
-        repo: repo?.remote ?? null,
-        agents,
-        context: usage.context,
-        costUsd: usage.cost?.usd,
-      }),
-    }
+    return { text: formatOffice(await officeView($)) }
+  })
+
+  on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
+    const { Box, Text } = $.ui.resolve(e)
+    const rows = officeRows(await officeView($))
+
+    return (
+      <Box flexDirection="column">
+        {rows.map(row =>
+          row.kind === 'heading' ? (
+            <Text bold>{row.text}</Text>
+          ) : row.kind === 'item' ? (
+            <Text>{`  ${row.text}`}</Text>
+          ) : (
+            <Text>{row.text}</Text>
+          ),
+        )}
+      </Box>
+    )
   })
 
   on('command.run', { command: 'handoff' }, async ($, e) => {
