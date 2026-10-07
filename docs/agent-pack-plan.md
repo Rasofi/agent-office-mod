@@ -23,11 +23,11 @@ Still open: confirm that line in a real cloud session (10 minutes, phase 2).
 
 ## How people install it (target)
 
-1. **Terminal / desktop app:** `/plugin install agent-office --marketplace Rasofi/agent-office-mod`. The next session starts with the orchestrator as the main session. Nesting works with the default limit.
+1. **Terminal / desktop app:** `/plugin install agent-pack --marketplace Rasofi/agent-office-mod`. The next session starts with the orchestrator as the main session. Nesting works with the default limit.
 2. **Cloud sessions (claude.ai/code, phone):** three lines in the environment's setup script (bash):
    ```bash
    claude plugin marketplace add Rasofi/agent-office-mod
-   claude plugin install agent-office@rasofi-mods
+   claude plugin install agent-pack@rasofi-mods
    python3 -c "import json,os;p=os.path.expanduser('~/.claude/settings.json');os.makedirs(os.path.dirname(p),exist_ok=True);d=json.load(open(p)) if os.path.exists(p) else {};d.setdefault('env',{})['CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH']='3';json.dump(d,open(p,'w'),indent=2)"
    ```
    Or commit the `env` line to the repo's `.claude/settings.json`; then only the first two lines are needed.
@@ -38,7 +38,7 @@ Still open: confirm that line in a real cloud session (10 minutes, phase 2).
 | Layer | What | Needs |
 | --- | --- | --- |
 | 1. Plain plugin | `agents/*.md` (12 roles), `settings.json` (`agent`), `templates/project-profile.md` | nothing: works even where hooks/mods are turned off |
-| 2. Mod extras | model per tier from options, spawn limits, git guards, `/office` role view | mods allowed (Claude Code 2.1.287+) |
+| 2. Mod extras | model per tier from options, spawn limits, git guards, `/pack` role view | mods allowed (Claude Code 2.1.287+) |
 
 Layer 1 is the product. Layer 2 makes it nicer and safer, and nothing in layer 1 depends on it.
 
@@ -145,7 +145,7 @@ Every role prompt carries the same blocks, kept identical by a check script:
 
 ```
 .claude-plugin/plugin.json, marketplace.json   (existing)
-settings.json                 { "agent": "agent-office:orchestrator" }
+settings.json                 { "agent": "agent-pack:orchestrator" }
 agents/                       12 role files
 templates/project-profile.md
 scripts/check-agents.mjs      invariant checks, run in CI (plain Node, no dependencies)
@@ -173,7 +173,7 @@ test/                         existing + layer 2 tests
 | 2 | Cloud: the depth line confirmed in a real cloud session; `smoke-nesting.sh` | 0.5 d | the same task runs three levels in a cloud session | ✅ usable everywhere |
 | 3 | Layer 2: tier options, parallel cap (4), per-agent scratch dirs | 1 d | engine tests pass; changing `buildModel` moves all builders | |
 | 4 | Layer 2: git guards (protected-branch push, commit on merged branch, workers never commit) + adversarial tests + second security review | 1.5 d | guard command table passes; review finds no bypass | ✅ safe defaults |
-| 5 | Layer 2: `/office` shows role, model, parent and STATUS per agent | 0.5-1 d | a real run shows the tree and verdicts | |
+| 5 | Layer 2: `/pack` shows role, model, parent and STATUS per agent | 0.5-1 d | a real run shows the tree and verdicts | |
 | 6 | Live trial on one real repo; tune tiers | 0.5 d | one feature end to end; tokens per tier noted | ✅ v1.0 |
 
 Total about 6.5-7 working days. Phases 1-2 alone (about 3 days) deliver the core: install, and three levels work.
@@ -183,7 +183,7 @@ Total about 6.5-7 working days. Phases 1-2 alone (about 3 days) deliver the core
 - ⚠ **Nesting depends on the limit the host sets.** The default allows it; cloud sessions turn it off until the settings line is added. If a future host ignores settings `env`, the orchestrator still works, but leads have to do their workers' jobs (each lead prompt carries that fallback: "if you can't start agents, return a delegation plan for the orchestrator").
 - **The plugin's `agent` setting applies to every session where the plugin is enabled.** That's the point, but it surprises people who install it for one repo; the README says how to opt out.
 - **Bash is a wide tool:** review roles could still write files through it. The prompts forbid it; layer 2 can only detect it afterwards.
-- **Cost:** `opus` leads plus parallel workers add up. The parallel cap, `/office` token totals per tier, and `planModel: sonnet` keep it in check.
+- **Cost:** `opus` leads plus parallel workers add up. The parallel cap, `/pack` token totals per tier, and `planModel: sonnet` keep it in check.
 - **Mod API is early access** (layer 2 only): pinned in CI, re-tested on each Claude Code bump.
 
 ## Not in this plan

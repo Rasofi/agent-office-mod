@@ -13,13 +13,13 @@ import {
 import type { IssueRow } from './handoff'
 import {
   emptyStats,
-  formatOffice,
-  officeRows,
+  formatPack,
+  packRows,
   recordAgentStart,
   recordToolCall,
   recordTurn,
 } from './stats'
-import type { OfficeView } from './stats'
+import type { PackView } from './stats'
 
 // GitHub through the user's own `gh` login (REST only: cloud sessions block GraphQL).
 const gh = async (
@@ -48,13 +48,13 @@ const parse = <T,>(text: string): T | null => {
   }
 }
 
-const session = atom({ plugin: 'agent-office', key: 'session' } as const, emptyStats())
+const session = atom({ plugin: 'agent-pack', key: 'session' } as const, emptyStats())
 
-const PANE = 'office'
+const PANE = 'pack'
 
-// What /office shows, the pane and the text reply alike. Reading the atom makes
+// What /pack shows, the pane and the text reply alike. Reading the atom makes
 // the pane a reader: every recorded tool call, agent or turn redraws it.
-const officeView = async ($: EngineInterface): Promise<OfficeView> => {
+const packView = async ($: EngineInterface): Promise<PackView> => {
   const [stats, engine, surfaces, repo, agents, usage] = await Promise.all([
     read($, session),
     $.session.version(),
@@ -78,8 +78,8 @@ const officeView = async ($: EngineInterface): Promise<OfficeView> => {
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
-      name: 'office',
-      description: 'Agent Office: what this session and its agents are doing',
+      name: 'pack',
+      description: 'Agent pack: what this session and its agents are doing',
     })
     await $.command.register({
       name: 'handoff',
@@ -123,22 +123,22 @@ export const register: Register = on => {
 
   // A pane where one can draw; the text reply where nothing places it (cloud, -p).
   // A -p run has no surface yet places every pane, so no surface means text too.
-  on('command.run', { command: 'office' }, async $ => {
+  on('command.run', { command: 'pack' }, async $ => {
     const surfaces = await $.session.surfaces()
     const opened =
       surfaces.length === 0
         ? { isPlaced: false }
         : await $.ui
-            .open({ id: PANE, title: 'Office' })
+            .open({ id: PANE, title: 'Agent pack' })
             .catch(() => ({ isPlaced: false }))
-    if (opened.isPlaced) return { text: 'Office pane opened (ctrl+x x closes it).' }
+    if (opened.isPlaced) return { text: 'Agent pack pane opened (ctrl+x x closes it).' }
 
-    return { text: formatOffice(await officeView($)) }
+    return { text: formatPack(await packView($)) }
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Text } = $.ui.resolve(e)
-    const rows = officeRows(await officeView($))
+    const rows = packRows(await packView($))
 
     return (
       <Box flexDirection="column">
@@ -201,7 +201,7 @@ export const register: Register = on => {
     return {
       sections: [
         ...composed.sections,
-        { id: 'agent-office:handoffs', text: ORCHESTRATOR_RULES, scope: 'session' as const },
+        { id: 'agent-pack:handoffs', text: ORCHESTRATOR_RULES, scope: 'session' as const },
       ],
     }
   })

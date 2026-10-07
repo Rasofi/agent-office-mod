@@ -1,15 +1,15 @@
-// Pure session bookkeeping: what /office reports. Metadata only (tool names,
+// Pure session bookkeeping: what /pack reports. Metadata only (tool names,
 // counts, token numbers); never tool inputs, outputs or message text.
 
 import type {
   AgentRow,
   LoopStats,
-  OfficeView,
+  PackView,
   SessionStats,
   TurnUsage,
 } from '../types'
 
-export type { AgentRow, LoopStats, OfficeView, SessionStats, TurnUsage }
+export type { AgentRow, LoopStats, PackView, SessionStats, TurnUsage }
 
 export const MAIN = 'main'
 
@@ -100,13 +100,13 @@ const loopText = (label: string, loop: LoopStats): string =>
   `${label}: ${plural(loop.turns, 'turn')}, ${plural(loop.toolCalls, 'tool call')}` +
   (loop.failed > 0 ? ` (${loop.failed} failed)` : '')
 
-/** One row of the office view: a plain line, a section heading, or an item under one. */
-export type OfficeRow = { kind: 'line' | 'heading' | 'item'; text: string }
+/** One row of the pack view: a plain line, a section heading, or an item under one. */
+export type PackRow = { kind: 'line' | 'heading' | 'item'; text: string }
 
-/** The office view as rows: what the /office pane draws and its text reply joins. */
-export const officeRows = (view: OfficeView): OfficeRow[] => {
+/** The pack view as rows: what the /pack pane draws and its text reply joins. */
+export const packRows = (view: PackView): PackRow[] => {
   const { stats } = view
-  const rows: OfficeRow[] = []
+  const rows: PackRow[] = []
   const line = (text: string) => rows.push({ kind: 'line', text })
   const heading = (text: string) => rows.push({ kind: 'heading', text })
   const item = (text: string) => rows.push({ kind: 'item', text })
@@ -171,8 +171,8 @@ export const officeRows = (view: OfficeView): OfficeRow[] => {
   return rows
 }
 
-export const formatOffice = (view: OfficeView): string =>
+export const formatPack = (view: PackView): string =>
   [
-    'agent-office is loaded.',
-    ...officeRows(view).map(row => (row.kind === 'item' ? `  ${row.text}` : row.text)),
+    'agent-pack is loaded.',
+    ...packRows(view).map(row => (row.kind === 'item' ? `  ${row.text}` : row.text)),
   ].join('\n')

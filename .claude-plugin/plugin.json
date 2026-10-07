@@ -1,7 +1,7 @@
 {
-  "name": "agent-office",
-  "version": "0.6.0",
-  "description": "Agent Office inside Claude Code: what this session and its agents are doing (/office), and handoffs between repos as GitHub issues (/handoff, /inbox).",
+  "name": "agent-pack",
+  "version": "0.7.0",
+  "description": "Agent pack for Claude Code: what this session and its agents are doing (/pack), and handoffs between repos as GitHub issues (/handoff, /inbox).",
   "author": {
     "name": "Rasofi"
   },

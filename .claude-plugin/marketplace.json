@@ -6,7 +6,7 @@
   },
   "plugins": [
     {
-      "name": "agent-office",
+      "name": "agent-pack",
       "source": "./"
     }
   ]

@@ -1,14 +1,14 @@
 import { expect, test } from 'claude-code/testing'
 import type { CommandRunInput, On, SessionRepo } from 'claude-code'
 
-const office: CommandRunInput = {
-  command: 'office',
+const pack: CommandRunInput = {
+  command: 'pack',
   args: '',
   origin: { kind: 'composer' },
   presentation: { isFullscreen: false, columns: 120 },
 }
 
-// Nothing places the pane here (a cloud session, a -p run): /office answers as text.
+// Nothing places the pane here (a cloud session, a -p run): /pack answers as text.
 const engine = (on: On, repo: SessionRepo | null = null) => {
   on('ui.open', () => ({ value: { isPlaced: false, reason: 'no surface places panes' } }))
   on('session.version', () => ({ value: { version: '2.1.292' } }))
@@ -25,38 +25,38 @@ const engine = (on: On, repo: SessionRepo | null = null) => {
   }))
 }
 
-test('/office reports the engine, surfaces, repository and context', async ($, on) => {
-  engine(on, { root: '/repo', remote: 'https://github.com/Rasofi/agent-office-mod', internal: false, name: 'Rasofi/agent-office-mod' })
+test('/pack reports the engine, surfaces, repository and context', async ($, on) => {
+  engine(on, { root: '/repo', remote: 'https://github.com/example-org/web-app', internal: false, name: 'example-org/web-app' })
 
-  const { text } = await $.command.run(office)
+  const { text } = await $.command.run(pack)
 
-  expect(text).toContain('agent-office is loaded.')
+  expect(text).toContain('agent-pack is loaded.')
   expect(text).toContain('Claude Code: 2.1.292')
   expect(text).toContain('Surfaces: terminal')
-  expect(text).toContain('Repository: https://github.com/Rasofi/agent-office-mod')
+  expect(text).toContain('Repository: https://github.com/example-org/web-app')
   expect(text).toContain('Context: 25% of 200.0k tokens · cost $0.50')
   expect(text).toContain('Turns: 0 · tool calls: 0')
 })
 
-test('/office counts the tool calls the session made', async ($, on) => {
+test('/pack counts the tool calls the session made', async ($, on) => {
   engine(on)
   on('tool.call', () => ({ result: 'ok' as never }))
 
   await $.tool.call({ tool: 'Read', file_path: '/repo/a.md' })
   await $.tool.call({ tool: 'Read', file_path: '/repo/b.md' })
-  const { text } = await $.command.run(office)
+  const { text } = await $.command.run(pack)
 
   expect(text).toContain('tool calls: 2')
   expect(text).toContain('Top tools: Read 2')
   expect(text).not.toContain('/repo/a.md')
 })
 
-test('/office names a subagent by the type it started with', async ($, on) => {
+test('/pack names a subagent by the type it started with', async ($, on) => {
   engine(on)
   on('classic.SubagentStart', () => ({}))
 
   await $.classic.SubagentStart({ agent_id: 'a06e5ae9xyz', agent_type: 'Explore' })
-  const { text } = await $.command.run(office)
+  const { text } = await $.command.run(pack)
 
   expect(text).toContain('  Explore: 0 turns, 0 tool calls')
 })

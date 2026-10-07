@@ -1,4 +1,4 @@
-# Agent Office Mod - Context for Claude
+# agent-pack - Context for Claude
 
 ## What & Why
 A Claude Code mod that shows what a session and its agents are doing and lets orchestrators in different repos talk to each other, installable by anyone with one command and no external service.
@@ -10,7 +10,7 @@ A Claude Code mod that shows what a session and its agents are doing and lets or
 - Auth: none; same-user session messaging is Claude Code's own
 
 ## Key Features (MVP)
-1. `/office`: session view (agents, tools, tokens) with a pane where drawing is possible
+1. `/pack`: session view (agents, tools, tokens) with a pane where drawing is possible
 2. Find and message orchestrators in other sessions (`/ask`, `/inbox`), same machine live, cloud via GitHub issues
 3. Install from a marketplace with one command; later Anthropic's directory for zero-setup cloud use
 

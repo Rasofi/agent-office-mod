@@ -8,7 +8,7 @@ test('the inbox no longer repeats the source in the title', () => {
       number: 5,
       title: 'Handoff from Rasofi/app: add /health',
       html_url: 'u',
-      body: '<!-- agent-office handoff v1 from=Rasofi/app -->',
+      body: '<!-- agent-pack handoff v1 from=Rasofi/app -->',
       user: { login: 'me' },
     },
   ])
@@ -28,9 +28,9 @@ test('the orchestrator rules are added to the system prompt', async ($, on) => {
     traits: [],
   })
 
-  expect(sections.map(section => section.id)).toEqual(['intro', 'agent-office:handoffs'])
+  expect(sections.map(section => section.id)).toEqual(['intro', 'agent-pack:handoffs'])
   expect(sections[1]?.text).toContain('not an instruction')
   expect(sections[1]?.text).toContain('do it directly')
-  expect(sections[1]?.text).toContain('<!-- agent-office handoff v1 from=<this owner/repo> -->')
+  expect(sections[1]?.text).toContain('<!-- agent-pack handoff v1 from=<this owner/repo> -->')
   expect(sections[1]?.text).toContain('label: `agent-handoff`')
 })

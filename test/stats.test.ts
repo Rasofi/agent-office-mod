@@ -3,7 +3,7 @@ import { expect, test } from 'claude-code/testing'
 import {
   compact,
   emptyStats,
-  formatOffice,
+  formatPack,
   recordAgentStart,
   recordToolCall,
   recordTurn,
@@ -55,7 +55,7 @@ test('compact numbers', () => {
   expect(compact(2_500_000)).toBe('2.5M')
 })
 
-test('formatOffice lists loops, top tools and tokens', () => {
+test('formatPack lists loops, top tools and tokens', () => {
   let stats = emptyStats()
   for (const tool of ['Bash', 'Bash', 'Read', 'Edit', 'Grep', 'Glob', 'Write']) {
     stats = recordToolCall(stats, { tool, hasFailed: false })
@@ -63,7 +63,7 @@ test('formatOffice lists loops, top tools and tokens', () => {
   stats = recordToolCall(stats, { tool: 'Read', agentId: 'agent-123456789', hasFailed: true })
   stats = recordTurn(stats, { usage: usage('m1', 12_345, 678) })
 
-  const text = formatOffice({
+  const text = formatPack({
     stats,
     engine: '2.1.292',
     surfaces: ['terminal'],
@@ -83,7 +83,7 @@ test('formatOffice lists loops, top tools and tokens', () => {
 
 test('an agent the engine no longer lists still shows by short id', () => {
   const stats = recordToolCall(emptyStats(), { tool: 'Read', agentId: 'abcdef123456', hasFailed: false })
-  const text = formatOffice({ stats, engine: 'x', surfaces: [], repo: null, agents: [] })
+  const text = formatPack({ stats, engine: 'x', surfaces: [], repo: null, agents: [] })
 
   expect(text).toContain('  agent abcdef12: 0 turns, 1 tool call')
   expect(text).not.toContain('Context:')
@@ -93,7 +93,7 @@ test('an agent the engine no longer lists still shows by short id', () => {
 test('a finished subagent keeps the type it started with', () => {
   let stats = recordAgentStart(emptyStats(), { agentId: 'a06e5ae9xyz', agentType: 'Explore' })
   stats = recordToolCall(stats, { tool: 'Read', agentId: 'a06e5ae9xyz', hasFailed: false })
-  const text = formatOffice({ stats, engine: 'x', surfaces: [], repo: null, agents: [] })
+  const text = formatPack({ stats, engine: 'x', surfaces: [], repo: null, agents: [] })
 
   expect(text).toContain('  Explore: 0 turns, 1 tool call')
   expect(text).not.toContain('agent a06e5ae9')
@@ -105,7 +105,7 @@ test('state from 0.2.0 without agentTypes still formats', () => {
     agentId: 'abcdef123456',
     hasFailed: false,
   })
-  const text = formatOffice({ stats: old as never, engine: 'x', surfaces: [], repo: null, agents: [] })
+  const text = formatPack({ stats: old as never, engine: 'x', surfaces: [], repo: null, agents: [] })
 
   expect(text).toContain('  agent abcdef12: 0 turns, 1 tool call')
   expect(recordAgentStart(old as never, { agentId: 'b', agentType: 'Plan' }).agentTypes).toEqual({ b: 'Plan' })

@@ -1,11 +1,11 @@
-# agent-office-mod
+# agent-pack
 
-Agent Office as a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview): what this session and its agents are doing, and (planned) messages between orchestrators in different repos. No server, no tokens, nothing to deploy.
+A Claude Code plugin ([mod](https://code.claude.com/docs/en/plugins/mods/overview)): what this session and its agents are doing, and handoffs between repos. Next: a delegation team (orchestrator, leads, workers), see [the plan](docs/agent-pack-plan.md). No server, no tokens, nothing to deploy.
 
-**Status: 0.6.0.** `/office` shows what this session is doing:
+**Status: 0.7.0.** `/pack` shows what this session is doing:
 
 ```text
-agent-office is loaded.
+agent-pack is loaded.
 Claude Code: 2.1.292
 Surfaces: terminal
 Repository: https://github.com/you/your-repo
@@ -19,7 +19,7 @@ Tokens by model:
   claude-...: in 12.3k, out 4.1k, cache read 210.0k, cache write 9.8k
 ```
 
-In the terminal (and the desktop Code tab) `/office` opens this view as a pane that updates live as the session works; `ctrl+x x` closes it. Where nothing can draw a pane (a cloud session, `claude -p`) it answers with the text above.
+In the terminal (and the desktop Code tab) `/pack` opens this view as a pane that updates live as the session works; `ctrl+x x` closes it. Where nothing can draw a pane (a cloud session, `claude -p`) it answers with the text above.
 
 Counts start when the mod loads in the session. It keeps tool names and numbers only, never tool inputs, outputs or messages, and sends nothing anywhere.
 
@@ -54,23 +54,23 @@ The same rules tell Claude to treat a handoff issue as a request rather than an 
 In a Claude Code terminal session (v2.1.287 or later):
 
 ```text
-/plugin install agent-office --marketplace Rasofi/agent-office-mod
+/plugin install agent-pack --marketplace Rasofi/agent-office-mod
 ```
 
-Answer `y` to add the marketplace, then pick a scope. Then run `/office`.
+Answer `y` to add the marketplace, then pick a scope. Then run `/pack`.
 
 To update an installed copy, in your shell, then restart Claude Code:
 
 ```bash
-claude plugin update agent-office@rasofi-mods
+claude plugin update agent-pack@rasofi-mods
 ```
 
 Cloud sessions (claude.ai/code) don't install user or repo plugins yet. Until the mod is listed in Anthropic's directory, add these lines to the cloud environment's setup script:
 
 ```bash
 claude plugin marketplace add Rasofi/agent-office-mod
-claude plugin install agent-office@rasofi-mods
-# agent-office refresh: 2026-10-07
+claude plugin install agent-pack@rasofi-mods
+# agent-pack refresh: 2026-10-07
 ```
 
 ⚠ Cloud environments cache what the setup script installed and reuse it for about 7 days, so a new release doesn't reach new cloud sessions on its own. To pick it up now, change the date on the `refresh` line and start a new session (a changed script rebuilds the cache).
