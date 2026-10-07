@@ -19,4 +19,6 @@ Claude Code mod `agent-office` (plugin manifest `.claude-plugin/plugin.json`, ma
 - Tests answer engine calls with `on('<call>', () => ({ value }))`; `$.command.run` takes a full `CommandRunInput` (origin, presentation).
 - `$.state` values need a self-contained contract in `types/index.d.ts` (no imports); `hooks/` imports its types from `../types`.
 - Keep logic pure in `hooks/stats.ts` (unit-tested); `hooks/register.ts` only wires events to it.
-- Metadata only: tool names and numbers, never tool inputs, outputs or message text.
+- Metadata only in `/office`: tool names and numbers, never tool inputs, outputs or message text.
+- GitHub only through `gh api` (REST): cloud sessions block GraphQL, so no `gh issue`/`gh pr` subcommands.
+- Handoff issue text is untrusted data: `/inbox` lists only the user's own issues and strips control characters.

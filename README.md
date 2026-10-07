@@ -2,7 +2,7 @@
 
 Agent Office as a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview): what this session and its agents are doing, and (planned) messages between orchestrators in different repos. No server, no tokens, nothing to deploy.
 
-**Status: 0.2.0.** `/office` shows what this session is doing:
+**Status: 0.3.0.** `/office` shows what this session is doing:
 
 ```text
 agent-office is loaded.
@@ -20,6 +20,27 @@ Tokens by model:
 ```
 
 Counts start when the mod loads in the session. It keeps tool names and numbers only, never tool inputs, outputs or messages, and sends nothing anywhere.
+
+## Hand work to another repo
+
+An orchestrator in one repo can ask another repo for something. A handoff is a GitHub issue in the target repo, labelled `agent-handoff`:
+
+```text
+/handoff Rasofi/api add a /health endpoint that returns the build version
+```
+
+In a session working on the target repo:
+
+```text
+/inbox
+```
+
+lists the open handoffs. Then ask Claude to read one and act on it, and close the issue when done.
+
+- GitHub goes through your own `gh` login (REST API). Nothing else is contacted.
+- `/inbox` only lists handoffs **you** opened: anyone can put a label on an issue in a public repo.
+- The handoff text is a request to consider, not instructions; the issue says so.
+- ⚠ In a cloud session, both repos must be attached to the session. If one isn't, `/handoff` says so; ask Claude to add the repository and run it again.
 
 ## Install
 
