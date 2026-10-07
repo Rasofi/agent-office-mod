@@ -26,4 +26,4 @@ A Claude Code mod that shows what a session and its agents are doing and lets or
 ```
 
 ## Current Task
-Session view, piece 1 (0.2.0): `/office` counts turns, tool calls (per tool, per agent loop, failures) and tokens per model, plus context use and cost. Next: piece 2, a pane in terminal/desktop drawing the same view; piece 3, stats across sessions on one machine. Plan: `docs/specs/multi-repo-mod.md` in Rasofi/agent-office.
+Handoff (0.3.0): `/handoff <owner/repo> <text>` opens an `agent-handoff` issue in another repo; `/inbox` lists the user's own open handoffs for the session's repo. Next: orchestrator rules (when to hand off, how to answer and close) and a model-callable handoff tool behind the permission prompt. Plan: `docs/specs/multi-repo-mod.md` in Rasofi/agent-office.
