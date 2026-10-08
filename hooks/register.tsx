@@ -57,7 +57,10 @@ const compactIfDue = async ($: EngineInterface): Promise<void> => {
   try {
     const [usage, agents] = await Promise.all([$.session.usage(), $.agent.list()])
     if (shouldCompact({ percent: usage.context.percent, agents })) {
-      await $.session.compact({ instructions: COMPACT_INSTRUCTIONS })
+      // Headless sessions (cloud, -p, SDK) refuse the direct call; there /compact runs as a command.
+      await $.session
+        .compact({ instructions: COMPACT_INSTRUCTIONS })
+        .catch(() => $.command.run({ command: 'compact', args: COMPACT_INSTRUCTIONS }))
     }
   } catch {
     // A turn started meanwhile, or the engine refused: try again after the next turn.
