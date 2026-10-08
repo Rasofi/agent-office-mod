@@ -2,13 +2,13 @@
 
 A Claude Code plugin that gives every session a small delegation team. Your main session becomes the **orchestrator**: it plans the change, writes acceptance criteria and hands the work to two **leads** on Opus, who run **workers** on Sonnet (code, tests, review) and Haiku (docs, housekeeping). A slower **deep reviewer** on Fable is called only for risky changes. Install it once: no server, no tokens, nothing to deploy.
 
-**Status: 0.10.0.** The team (13 agent files), plus `/pack` (what the session and its agents are doing) and `/handoff` / `/inbox` (handoffs between repos). Cloud sessions need one extra setup line, see [Install](#install).
+**Status: 0.11.0.** The team (14 agent files), plus `/pack` (what the session and its agents are doing) and `/handoff` / `/inbox` (handoffs between repos). Cloud sessions need one extra setup line, see [Install](#install).
 
 ## The team
 
 ```text
 orchestrator (main session, your /model)
-├── build-lead (opus)    → test-writer, coder (sonnet) · docs-writer (haiku)
+├── build-lead (opus)    → test-writer, coder (sonnet) · coder-fast, docs-writer (haiku)
 ├── review-lead (opus)   → verifier, security-reviewer, compliance-reviewer (sonnet)
 │                          deep-reviewer (fable, on call)
 ├── scout, housekeeper (haiku)
@@ -21,6 +21,7 @@ orchestrator (main session, your /model)
 | `build-lead` | opus | freezes the contract, briefs the builders, checks they stayed in scope, merges |
 | `review-lead` | opus | picks the reviewers, runs them in parallel, merges one verdict |
 | `coder` | sonnet | one scoped code change |
+| `coder-fast` | haiku | a tightly scoped change with exact files and a frozen contract: cheaper, needs more steps |
 | `test-writer` | sonnet | tests per acceptance criterion, written from the contract, not from the code |
 | `docs-writer` | haiku | docs and CHANGELOG true to the diff; checks every command it writes down |
 | `researcher` | sonnet | one question, answered with sources; never sends code or private data out |
@@ -137,6 +138,12 @@ followups: ask            # ask | file | off
 
 The team's descriptions add about 1.4k tokens to every session, and the orchestrator's instructions about 3.5k to the main session. Each agent run adds its own instructions (about 2k tokens) plus its work. Opus leads and parallel workers add up, so small changes skip the leads, and `deep-reviewer` runs only when it's called for. `claude plugin details agent-pack` shows the current numbers.
 
+**Keep the orchestrator cheap.** The orchestrator re-reads its whole conversation on every step, so on long tasks it, not the workers, is most of the cost. Run the session on Sonnet (`/model sonnet`) and let the Opus leads and the specialists do the hard thinking.
+
+**Automatic compaction.** Once the main conversation passes 35% of its context window, the plugin compacts it between turns, but never while an agent is still working. The orchestrator keeps its plan and progress in `state.md` in the task's scratch directory, so it picks up where it was. This needs mods (Claude Code 2.1.287+); elsewhere Claude Code's own auto-compaction applies.
+
+**Waves.** Big work runs in waves of at most 3 workers, each brief about 600 changed lines at most, with a checkpoint commit on the feature branch after each wave and one PR per wave or two.
+
 Measured once: a new endpoint with tests and a README section (both leads, coder, test-writer, docs-writer, verifier, security reviewer, housekeeper twice) took about 4 minutes and $0.82, with the main session on Sonnet.
 
 ## See what the session is doing: `/pack`
@@ -158,7 +165,7 @@ Tokens by model:
 
 In the terminal (and the desktop Code tab) `/pack` opens this view as a pane that updates live as the session works; `ctrl+x x` closes it. Where nothing can draw a pane (a cloud session, `claude -p`) it answers with the text above.
 
-A run is one stretch of an agent's work until it stops or answers; a nudged agent shows 2. Counts start when the plugin loads in the session. It keeps tool names and numbers only, never tool inputs, outputs or messages, and sends nothing anywhere. `/pack` and the handoff commands are [mod](https://code.claude.com/docs/en/plugins/mods/overview) features; the team works without them.
+A run is one stretch of an agent's work until it stops or answers; a nudged agent shows 2. Counts cover the whole session: they are saved in the plugin's own store (`~/.claude/plugins/store/`, numbers and tool names only, dropped after 30 days) and merged back when the session reloads (a container restart, a Claude Code or plugin update); `/pack` then says when. A one-line summary also sits under the prompt (agents running, runs, tool calls, cost, context), and the pane opens by itself when a screen that can draw it (terminal, desktop app, mobile app, VS Code) joins the session; `/pack` lists the screens that joined. It keeps tool names and numbers only, never tool inputs, outputs or messages, and sends nothing anywhere. `/pack` and the handoff commands are [mod](https://code.claude.com/docs/en/plugins/mods/overview) features; the team works without them.
 
 ## Hand work to another repo
 

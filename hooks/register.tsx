@@ -11,17 +11,25 @@ import {
   repoFromRemote,
 } from './handoff'
 import type { IssueRow } from './handoff'
+import { COMPACT_INSTRUCTIONS, shouldCompact } from './compact'
 import { holdsInForeground } from './spawn'
 import {
   emptyStats,
   formatPack,
+  isSaved,
+  mergeRestored,
+  needsRestore,
   packRows,
   recordAgentStart,
   recordAgentStop,
+  recordAttach,
   recordToolCall,
   recordTurn,
+  staleKeys,
+  statusLine,
+  storeKey,
 } from './stats'
-import type { PackView } from './stats'
+import type { PackView, SessionStats } from './stats'
 
 // GitHub through the user's own `gh` login (REST only: cloud sessions block GraphQL).
 const gh = async (
@@ -50,7 +58,80 @@ const parse = <T,>(text: string): T | null => {
   }
 }
 
-const session = atom({ plugin: 'agent-pack', key: 'session' } as const, emptyStats())
+// Compacts the main session when it has grown past the threshold (see hooks/compact.ts).
+// Never throws: a refused or failed compaction just waits for the next turn.
+const compactIfDue = async ($: EngineInterface): Promise<void> => {
+  try {
+    const [usage, agents] = await Promise.all([$.session.usage(), $.agent.list()])
+    if (shouldCompact({ percent: usage.context.percent, agents })) {
+      // Headless sessions (cloud, -p, SDK) refuse the direct call; there /compact runs as a command.
+      await $.session
+        .compact({ instructions: COMPACT_INSTRUCTIONS })
+        .catch(() => $.command.run({ command: 'compact', args: COMPACT_INSTRUCTIONS }))
+    }
+  } catch {
+    // A turn started meanwhile, or the engine refused: try again after the next turn.
+  }
+}
+
+// A fresh counter set gets a random epoch, so a restore can tell it from one that survived a reload.
+const session = atom(
+  { plugin: 'agent-pack', key: 'session' } as const,
+  { ...emptyStats(), epoch: crypto.randomUUID() },
+)
+
+// Once per loaded copy of the plugin: merge counts saved before a reload, and
+// drop saved sessions older than 30 days. Never throws; a failure only means
+// /pack starts from what this copy saw.
+let restoring: Promise<void> | undefined
+const restore = ($: EngineInterface): Promise<void> =>
+  (restoring ??= (async () => {
+    try {
+      const saved = await $.store.get(storeKey(await $.session.id()))
+      if (isSaved(saved)) {
+        const now = await $.clock.now()
+        // update, not record: record awaits this very restore.
+        await update($, session, stats => (needsRestore(stats, saved) ? mergeRestored(stats, saved.stats, now) : stats))
+      }
+      const keys = await $.store.keys()
+      const entries = await Promise.all(
+        keys.map(async key => {
+          const value = await $.store.get(key)
+          return { key, savedAt: isSaved(value) ? value.savedAt : undefined }
+        }),
+      )
+      const now = await $.clock.now()
+      await Promise.all(staleKeys(entries, now).map(key => $.store.delete(key)))
+    } catch {
+      // No store or no session id here: counts just start with this copy.
+    }
+  })())
+
+// Saving and the status line run at most every 2 seconds, after the latest change.
+let flushPending = false
+const flush = ($: EngineInterface): void => {
+  if (flushPending) return
+  flushPending = true
+  $.clock.after(2000, () => {
+    flushPending = false
+    void (async () => {
+      try {
+        const view = await packView($)
+        $.ui.status(statusLine(view))
+        await $.store.set(storeKey(await $.session.id()), { savedAt: await $.clock.now(), stats: view.stats })
+      } catch {
+        // The next change tries again.
+      }
+    })()
+  })
+}
+
+// Every counter change goes through here: restore first, then record, then save soon.
+const record = async ($: EngineInterface, change: (stats: SessionStats) => SessionStats): Promise<void> => {
+  await restore($)
+  await update($, session, change)
+  flush($)
+}
 
 const PANE = 'pack'
 
@@ -99,7 +180,7 @@ export const register: Register = on => {
   on('tool.call', async ($, e, next) => {
     const ran = await next(e)
     const hasFailed = ran.deny !== undefined || ran.isError === true
-    await update($, session, stats =>
+    await record($, stats =>
       recordToolCall(stats, { tool: e.tool, agentId: e.agentId, hasFailed }),
     )
 
@@ -111,7 +192,7 @@ export const register: Register = on => {
     .catch(($, e, next) => next(e))
 
   on('classic.SubagentStart', async ($, e, next) => {
-    await update($, session, stats =>
+    await record($, stats =>
       recordAgentStart(stats, { agentId: e.agent_id, agentType: e.agent_type }),
     )
 
@@ -119,23 +200,35 @@ export const register: Register = on => {
   })
 
   on('classic.SubagentStop', async ($, e, next) => {
-    await update($, session, stats => recordAgentStop(stats, e.agent_id))
+    await record($, stats => recordAgentStop(stats, e.agent_id))
 
     return next(e)
   }).catch(($, e, next) => next(e))
 
   on('turn.complete', async ($, e, next) => {
     const done = await next(e)
-    await update($, session, stats =>
+    await record($, stats =>
       recordTurn(stats, { agentId: e.agentId, usage: done.usage ?? e.usage }),
     )
+    // compact refuses while a turn runs, so check just after the main turn ends.
+    if (e.agentId === undefined) $.clock.after(1000, () => void compactIfDue($))
 
     return done
   })
 
+  // A screen that can draw joined (terminal, desktop app, mobile app, VS Code): note it and open the pane there.
+  on('session.attach', async ($, e, next) => {
+    const joined = await next(e)
+    await record($, stats => recordAttach(stats, e.surface))
+    await $.ui.open({ id: PANE, title: 'Agent pack' }).catch(() => undefined)
+
+    return joined
+  }).catch(($, e, next) => next(e))
+
   // A pane where one can draw; the text reply where nothing places it (cloud, -p).
   // A -p run has no surface yet places every pane, so no surface means text too.
   on('command.run', { command: 'pack' }, async $ => {
+    await restore($)
     const surfaces = await $.session.surfaces()
     const opened =
       surfaces.length === 0

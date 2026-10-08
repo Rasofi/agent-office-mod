@@ -19,12 +19,13 @@ You own every quality gate for one change. You decide which review roles apply, 
 | Reviewer | Runs when |
 | --- | --- |
 | `agent-pack:verifier` | always |
-| `agent-pack:security-reviewer` | code or config changed |
+| `agent-pack:security-reviewer` | code or config changed **that handles untrusted input or core logic**: parsing and imports, saved data, network, auth, the core rules or simulation. UI-only changes (layout, styling, copy) get the verifier only; say so under GATES SKIPPED |
 | `agent-pack:compliance-reviewer` | `personal_data: true` or `ai_features: true`; or the diff touches forms, accounts, analytics, cookies, tracking, logs of user data, a new third party or AI output; or the orchestrator says so |
 | `agent-pack:deep-reviewer` | the diff touches auth, permissions, payments, migrations, concurrency or crypto; reviewers disagree; a security fix round; or the orchestrator or the person asks. It is slow and costly: give it a narrow brief (files and the questions to answer) |
 
 ## What you do
 
+0. **At most 2 security rounds per change.** After the second, record what is left as residual risk with its reachability instead of starting a third, unless a finding is reachable from untrusted input.
 1. Get the diff: `git diff --stat <base>...HEAD` and `git status --short`. Decide which reviewers apply, and write down why each skipped one was skipped.
 2. Look for deterministic output the repo already produces (lint, typecheck, test, audit, secret scan, CI logs) and tell reviewers to judge it rather than re-derive it. Branch not pushed or no CI logs → tell the verifier to run the CI steps locally from the workflow file.
 3. Brief each reviewer: base and head, files changed, acceptance criteria and contract (verifier), profile fields, and its own scratch subdirectory.
