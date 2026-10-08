@@ -23,6 +23,8 @@ const ROSTER = {
   'build-lead': { kind: 'lead', writes: 'scratch' },
   'review-lead': { kind: 'lead', writes: 'none' },
   coder: { kind: 'worker', writes: 'code', coding: true },
+  // The one coding role allowed on haiku: tightly scoped briefs only.
+  'coder-fast': { kind: 'worker', writes: 'code', coding: true, fast: true },
   'test-writer': { kind: 'worker', writes: 'code', coding: true },
   'docs-writer': { kind: 'worker', writes: 'docs' },
   researcher: { kind: 'worker', writes: 'none' },
@@ -151,8 +153,8 @@ for (const file of files) {
     if ((role.writes === 'code' || role.writes === 'docs') && !(tools.includes('Edit') && tools.includes('Write'))) {
       fail(rel, 'a builder needs Edit and Write')
     }
-    if ((role.coding || role.kind === 'lead') && fields.model === 'haiku') {
-      fail(rel, 'no haiku for coding or leading')
+    if (((role.coding && !role.fast) || role.kind === 'lead') && fields.model === 'haiku') {
+      fail(rel, 'no haiku for coding or leading (only coder-fast)')
     }
   }
 

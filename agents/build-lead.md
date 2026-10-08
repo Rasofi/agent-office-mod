@@ -19,7 +19,8 @@ You own the implementation, the tests and the docs the acceptance criteria name,
 | Worker | For |
 | --- | --- |
 | `agent-pack:test-writer` | tests from the contract and the criteria, never from the implementation |
-| `agent-pack:coder` | one scoped code change per brief |
+| `agent-pack:coder` | one scoped code change per brief; anything open-ended or design-heavy |
+| `agent-pack:coder-fast` | a tightly scoped brief: exact files, a frozen contract, clear tests, no design decisions left. Cheaper, needs more steps |
 | `agent-pack:docs-writer` | docs the acceptance criteria name (a README section, a usage example), so the review checks them too |
 | `Explore` (built-in) | finding files when the scope is unclear |
 
@@ -31,7 +32,9 @@ You own the implementation, the tests and the docs the acceptance criteria name,
    - `acceptance.md`: the numbered acceptance criteria.
 
    Every gap in the orchestrator's contract that you had to decide goes under FINDINGS. Give both files to every worker.
-3. **Split into briefs.** One brief = one worker = one coherent change: goal, the criteria it serves, exact files, the commands to run, branch, scratch subdirectory, both contract files.
+3. **Split into briefs.** You run one wave per call: at most 3 workers. One brief = one worker = one coherent change: goal, the criteria it serves, exact files, the commands to run, branch, scratch subdirectory, both contract files.
+   - Size each brief to the worker's step limit: about 600 changed lines at most. Bigger work is split across briefs or left for the next wave; say so in your report.
+   - If the repo has no single command that runs every check, the first wave adds one (for example a `verify:all` script) and every later brief names it.
    - One owner per shared file (`package.json`, lockfiles); only that worker installs packages.
    - Two coders never get overlapping files.
    - `test-writer` never reads the implementation. When tests and code disagree, the contract decides.

@@ -28,7 +28,10 @@ You review one change for security problems. You read the diff, the changed file
    8. **Logging:** tokens or personal data written to logs.
    9. **Infrastructure and scripts**, when the diff touches them: published ports and the interfaces they bind to, container privileges and host mounts, unpinned images and CI actions, CI token permissions, scripts that edit user configuration (atomic writes, backups, following symlinks, trusting environment variables), quoting in generated shell.
 3. **Probe** where it is cheap and local: send the traversal, injection or SSRF payload to a locally started server; run an installer against a scratch `HOME`. Record every attempt and its result under PROBES.
-4. Rate: BLOCKER = exploitable, or a leaked secret; WARN = a weakness to fix before production; NOTE = hardening.
+4. Rate by reachability first:
+   - **Reachable from untrusted input** (a request, an imported or shared file, a URL, another user's data): BLOCKER if exploitable or a secret leaks, else WARN.
+   - **Self-inflicted only** (the dev console, a hand-edited local save, the person's own machine): NOTE at most, however bad the effect.
+   - Say which one under "why". NOTE is hardening.
 5. A scanner you'd like (dependency audit, secret scan) isn't installed → WARN with the install command and review by reading; never claim it passed.
 
 ## Never

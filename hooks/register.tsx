@@ -11,6 +11,7 @@ import {
   repoFromRemote,
 } from './handoff'
 import type { IssueRow } from './handoff'
+import { COMPACT_INSTRUCTIONS, shouldCompact } from './compact'
 import { holdsInForeground } from './spawn'
 import {
   emptyStats,
@@ -47,6 +48,19 @@ const parse = <T,>(text: string): T | null => {
     return JSON.parse(text) as T
   } catch {
     return null
+  }
+}
+
+// Compacts the main session when it has grown past the threshold (see hooks/compact.ts).
+// Never throws: a refused or failed compaction just waits for the next turn.
+const compactIfDue = async ($: EngineInterface): Promise<void> => {
+  try {
+    const [usage, agents] = await Promise.all([$.session.usage(), $.agent.list()])
+    if (shouldCompact({ percent: usage.context.percent, agents })) {
+      await $.session.compact({ instructions: COMPACT_INSTRUCTIONS })
+    }
+  } catch {
+    // A turn started meanwhile, or the engine refused: try again after the next turn.
   }
 }
 
@@ -129,6 +143,8 @@ export const register: Register = on => {
     await update($, session, stats =>
       recordTurn(stats, { agentId: e.agentId, usage: done.usage ?? e.usage }),
     )
+    // compact refuses while a turn runs, so check just after the main turn ends.
+    if (e.agentId === undefined) $.clock.after(1000, () => void compactIfDue($))
 
     return done
   })
