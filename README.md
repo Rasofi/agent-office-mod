@@ -165,7 +165,7 @@ Tokens by model:
 
 In the terminal (and the desktop Code tab) `/pack` opens this view as a pane that updates live as the session works; `ctrl+x x` closes it. Where nothing can draw a pane (a cloud session, `claude -p`) it answers with the text above.
 
-A run is one stretch of an agent's work until it stops or answers; a nudged agent shows 2. Counts start when the plugin loads in the session. It keeps tool names and numbers only, never tool inputs, outputs or messages, and sends nothing anywhere. `/pack` and the handoff commands are [mod](https://code.claude.com/docs/en/plugins/mods/overview) features; the team works without them.
+A run is one stretch of an agent's work until it stops or answers; a nudged agent shows 2. Counts cover the whole session: they are saved in the plugin's own store (`~/.claude/plugins/store/`, numbers and tool names only, dropped after 30 days) and merged back when the session reloads (a container restart, a Claude Code or plugin update); `/pack` then says when. A one-line summary also sits under the prompt (agents running, runs, tool calls, cost, context), and the pane opens by itself when a screen that can draw it (terminal, desktop app, mobile app, VS Code) joins the session; `/pack` lists the screens that joined. It keeps tool names and numbers only, never tool inputs, outputs or messages, and sends nothing anywhere. `/pack` and the handoff commands are [mod](https://code.claude.com/docs/en/plugins/mods/overview) features; the team works without them.
 
 ## Hand work to another repo
 

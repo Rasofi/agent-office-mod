@@ -20,7 +20,16 @@ export type SessionStats = {
   agentTypes: Record<string, string>
   /** Subagents that stopped (SubagentStop); absent in state from 0.9 and older. */
   finished?: Record<string, true>
+  /** Random id of this counter set: a reload that starts fresh gets a new one (0.11+). */
+  epoch?: string
+  /** When counts saved before a reload were merged back in (epoch ms). */
+  restoredAt?: number
+  /** Screens that attached to the session (terminal, desktop, mobile, vscode), first seen order. */
+  attached?: string[]
 }
+
+/** What the plugin keeps in its store per session, so counts survive reloads. */
+export type SavedStats = { savedAt: number; stats: SessionStats }
 
 export type TurnUsage = {
   model: string

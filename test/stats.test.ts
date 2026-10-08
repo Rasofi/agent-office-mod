@@ -4,11 +4,18 @@ import {
   compact,
   emptyStats,
   formatPack,
+  isSaved,
+  mergeRestored,
+  needsRestore,
   recordAgentStart,
+  recordAttach,
   recordAgentStop,
   recordToolCall,
   recordTurn,
+  staleKeys,
+  statusLine,
 } from '../hooks/stats'
+import type { SessionStats } from '../hooks/stats'
 
 const usage = (model: string, input: number, output: number) => ({
   model,
@@ -118,4 +125,70 @@ test('a stopped subagent the engine no longer lists shows as finished', () => {
   const text = formatPack({ stats, engine: '2.1.292', surfaces: [], repo: null, agents: [] })
 
   expect(text).toContain('  agent-pack:scout (finished): 0 runs, 0 tool calls')
+})
+
+const sample = (): SessionStats => ({
+  ...emptyStats(),
+  epoch: 'old',
+  turns: 3,
+  toolCalls: 10,
+  failed: 1,
+  tools: { Bash: 6, Read: 4 },
+  loops: { main: { turns: 2, toolCalls: 7, failed: 1 }, a1: { turns: 1, toolCalls: 3, failed: 0 } },
+  tokens: { m: { input: 1, output: 2, cacheRead: 3, cacheWrite: 4 } },
+  agentTypes: { a1: 'agent-pack:coder' },
+  finished: { a1: true },
+})
+
+test('counts saved before a reload are added to what came after', () => {
+  const now = { ...emptyStats(), epoch: 'new', turns: 1, toolCalls: 2, tools: { Bash: 2 }, loops: { main: { turns: 1, toolCalls: 2, failed: 0 } } }
+  const merged = mergeRestored(now, sample(), 1_000)
+
+  expect(merged.toolCalls).toBe(12)
+  expect(merged.tools).toEqual({ Bash: 8, Read: 4 })
+  expect(merged.loops.main).toEqual({ turns: 3, toolCalls: 9, failed: 1 })
+  expect(merged.tokens.m?.cacheWrite).toBe(4)
+  expect(merged.agentTypes.a1).toBe('agent-pack:coder')
+  expect(merged.epoch).toBe('new')
+  expect(merged.restoredAt).toBe(1_000)
+})
+
+test('restores only into a fresh counter set, once', () => {
+  const saved = { savedAt: 1, stats: sample() }
+  expect(needsRestore({ ...emptyStats(), epoch: 'new' }, saved)).toBe(true)
+  expect(needsRestore({ ...emptyStats(), epoch: 'old' }, saved)).toBe(false)
+  expect(needsRestore({ ...emptyStats(), epoch: 'new', restoredAt: 5 }, saved)).toBe(false)
+  expect(needsRestore(emptyStats(), saved)).toBe(false)
+  expect(isSaved({ savedAt: 1 })).toBe(false)
+  expect(isSaved(saved)).toBe(true)
+})
+
+test('saved sessions older than 30 days are dropped, other keys kept', () => {
+  const day = 24 * 60 * 60 * 1000
+  const keys = staleKeys(
+    [
+      { key: 'stats:old', savedAt: 0 },
+      { key: 'stats:new', savedAt: 40 * day },
+      { key: 'stats:broken' },
+      { key: 'other', savedAt: 0 },
+    ],
+    41 * day,
+  )
+  expect(keys).toEqual(['stats:old', 'stats:broken'])
+})
+
+test('the status line and the attached screens', () => {
+  let stats = recordAttach(sample(), 'mobile')
+  stats = recordAttach(stats, 'mobile')
+  expect(stats.attached).toEqual(['mobile'])
+  const line = statusLine({
+    stats,
+    agents: [{ id: 'a', status: 'running' } as never, { id: 'b', status: 'completed' } as never],
+    costUsd: 2.1,
+    context: { window: 1000, percent: 34.4 },
+  })
+  expect(line).toBe('agent-pack: 1 running · 3 runs · 10 tool calls · $2.10 · ctx 34%')
+  const text = formatPack({ stats: { ...stats, restoredAt: 0 }, engine: 'x', surfaces: [], repo: null, agents: [] })
+  expect(text).toContain('Screens attached: mobile')
+  expect(text).toContain('Counts restored after a reload at 00:00 UTC')
 })

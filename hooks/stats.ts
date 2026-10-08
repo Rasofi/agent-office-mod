@@ -5,13 +5,17 @@ import type {
   AgentRow,
   LoopStats,
   PackView,
+  SavedStats,
   SessionStats,
+  Tokens,
   TurnUsage,
 } from '../types'
 
-export type { AgentRow, LoopStats, PackView, SessionStats, TurnUsage }
+export type { AgentRow, LoopStats, PackView, SavedStats, SessionStats, TurnUsage }
 
 export const MAIN = 'main'
+
+const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`
 
 export const emptyStats = (): SessionStats => ({
   turns: 0,
@@ -31,6 +35,83 @@ export const recordAgentStart = (
   // `?? {}`: state kept from 0.2.0 within a session has no agentTypes yet.
   agentTypes: { ...(stats.agentTypes ?? {}), [agent.agentId]: agent.agentType },
 })
+
+// Persistence: counts are saved per session in the plugin's store and merged
+// back when a reload (container restart, Claude Code or plugin update) starts
+// the counters over. The epoch tells a fresh counter set from one that survived.
+
+export const STORE_PREFIX = 'stats:'
+export const KEEP_SAVED_MS = 30 * 24 * 60 * 60 * 1000
+
+export const storeKey = (sessionId: string): string => `${STORE_PREFIX}${sessionId}`
+
+export const isSaved = (value: unknown): value is SavedStats =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as SavedStats).savedAt === 'number' &&
+  typeof (value as SavedStats).stats === 'object' &&
+  (value as SavedStats).stats !== null &&
+  typeof (value as SavedStats).stats.toolCalls === 'number'
+
+/** Whether saved counts belong to an earlier counter set and must be merged in. */
+export const needsRestore = (current: SessionStats, saved: SavedStats): boolean =>
+  current.epoch !== undefined && saved.stats.epoch !== current.epoch && current.restoredAt === undefined
+
+const addCounts = <T extends Record<string, number>>(a: T, b: T): T => {
+  const sum: Record<string, number> = { ...a }
+  for (const [key, n] of Object.entries(b)) sum[key] = (sum[key] ?? 0) + n
+  return sum as T
+}
+
+const addRecords = <T extends Record<string, number>>(
+  a: Record<string, T>,
+  b: Record<string, T>,
+): Record<string, T> => {
+  const sum: Record<string, T> = { ...a }
+  for (const [key, value] of Object.entries(b)) sum[key] = sum[key] === undefined ? value : addCounts(sum[key], value)
+  return sum
+}
+
+/** Saved counts plus everything recorded since the reload; keeps the current epoch. */
+export const mergeRestored = (current: SessionStats, saved: SessionStats, now: number): SessionStats => ({
+  ...current,
+  turns: current.turns + saved.turns,
+  toolCalls: current.toolCalls + saved.toolCalls,
+  failed: current.failed + saved.failed,
+  tools: addCounts(saved.tools, current.tools),
+  loops: addRecords<LoopStats>(saved.loops, current.loops),
+  tokens: addRecords<Tokens>(saved.tokens, current.tokens),
+  agentTypes: { ...(saved.agentTypes ?? {}), ...current.agentTypes },
+  finished: { ...(saved.finished ?? {}), ...(current.finished ?? {}) },
+  attached: [...new Set([...(saved.attached ?? []), ...(current.attached ?? [])])],
+  restoredAt: now,
+})
+
+/** Store keys of saved sessions older than KEEP_SAVED_MS. */
+export const staleKeys = (saved: readonly { key: string; savedAt?: number }[], now: number): string[] =>
+  saved
+    .filter(s => s.key.startsWith(STORE_PREFIX) && (s.savedAt === undefined || now - s.savedAt > KEEP_SAVED_MS))
+    .map(s => s.key)
+
+export const recordAttach = (stats: SessionStats, surface: string): SessionStats =>
+  (stats.attached ?? []).includes(surface)
+    ? stats
+    : { ...stats, attached: [...(stats.attached ?? []), surface] }
+
+/** The one line under the prompt: running agents, totals, cost and context. */
+export const statusLine = (view: Pick<PackView, 'stats' | 'agents' | 'context' | 'costUsd'>): string => {
+  const running = view.agents.filter(agent => agent.status === 'running' || agent.status === 'pending').length
+  const parts = [
+    `agent-pack: ${running} running`,
+    `${plural(view.stats.turns, 'run')}`,
+    `${plural(view.stats.toolCalls, 'tool call')}`,
+  ]
+  if (view.costUsd !== undefined) parts.push(`$${view.costUsd.toFixed(2)}`)
+  if (view.context?.percent !== undefined) parts.push(`ctx ${Math.round(view.context.percent)}%`)
+  return parts.join(' · ')
+}
+
+const clockTime = (ms: number): string => new Date(ms).toISOString().slice(11, 16)
 
 export const recordAgentStop = (stats: SessionStats, agentId: string): SessionStats => ({
   ...stats,
@@ -99,8 +180,6 @@ export const compact = (n: number): string =>
       ? `${(n / 1_000).toFixed(1)}k`
       : String(n)
 
-const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`
-
 const loopText = (label: string, loop: LoopStats): string =>
   `${label}: ${plural(loop.turns, 'run')}, ${plural(loop.toolCalls, 'tool call')}` +
   (loop.failed > 0 ? ` (${loop.failed} failed)` : '')
@@ -117,6 +196,10 @@ export const packRows = (view: PackView): PackRow[] => {
   const item = (text: string) => rows.push({ kind: 'item', text })
 
   line(`Claude Code: ${view.engine}`)
+  line(`Screens attached: ${(stats.attached ?? []).join(', ') || 'none so far'}`)
+  if (stats.restoredAt !== undefined) {
+    line(`Counts restored after a reload at ${clockTime(stats.restoredAt)} UTC`)
+  }
   line(`Surfaces: ${view.surfaces.join(', ') || 'none'}`)
   line(`Repository: ${view.repo ?? 'none'}`)
 
